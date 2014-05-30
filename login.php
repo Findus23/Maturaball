@@ -19,7 +19,7 @@ if (isset($_POST["benutzername"]) && isset($_POST["passwort"])) { // wenn Benutz
 	require_once "verbindungsaufbau.php"; //mit Server verbinden
 	$user= $_POST["benutzername"];
 	$passwort= $_POST["passwort"];
-	$salt = "*|!JeFF28S,@Z3Sm5\1?"; //  geheimer Zufallszeichenwert ...
+	$salt = getenv('WEBSITE_SALT');
 	$salted_password = $salt . $passwort; // ... vor das Passwort hängen
 	$password_hash = hash('sha256', $salted_password);
 	if($stmt = $mysqli->prepare("SELECT password,user_id FROM benutzer WHERE name=?")) {
