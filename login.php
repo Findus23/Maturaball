@@ -50,7 +50,6 @@ if (!isset($_SESSION['user']) || $logout == TRUE ) { // wenn noch nicht angemeld
 	<meta charset="utf-8" />
 	<title>Login</title>
 	<meta name="author" content="Lukas Winkler" >
-	<link rel="stylesheet" href="style.css" />
 	<!-- hier schön designtes Anmeldeformular einfügen -->
 
 </head>
@@ -80,7 +79,6 @@ if ($logout == TRUE) {
 <?php
 } else { //wenn man erfolgreich angemeldet wurde
 echo "Hallo " . $_SESSION['user'] . " - <a href='./login.php?logout=yes'>Abmelden</a>";
-echo "<script>window.opener.parent.location.reload();window.close();</script>"; // Das Fenster wird geschlossen und das Ursprungsfenster wird neu geladen
 }
 ?>
 
