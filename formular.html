@@ -9,7 +9,7 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
 		
 		<!-- eigene META-Angaben -->
-		<title>Template</title>
+		<title>Ticketreservierung</title>
 		<meta name="author" content="Lukas Winkler" >
 		<meta name="date" content="2014-06-03T19:56:44+0200" >
 		<meta name="generator" content="Bluefish 2.2.6" >
@@ -103,7 +103,7 @@
 
 	</head>
 
-<body>
+<body onload="preis()">
 <!--[if lte IE 9 ]>
 <div class="ink-alert basic">
 	<button class="ink-dismiss">&times;</button>
@@ -144,43 +144,51 @@
 			<p>Hier kann ein Seitenleisten-Text, eine Navigationsleiste oder Logos der Sponsoren hinkommen. Oder die Leiste wird weggelassen.</p>
 		</div>
 		<div id="main" class="all-80 tiny-100 small-100">
-			<form class="ink-form">
+			<form class="ink-form" method="post" action="formular_absenden.php">
 				<div class="control-group required">
 					<label for="vorname">Vorname</label>
 					<div class="control">
-						<input id="vorname" type="text" placeholder="Vorname" autofocus required >
+						<input id="vorname" name="vorname" type="text" placeholder="Vorname" maxlength="15" autofocus required >
 					</div>
 				</div>
 				<div class="control-group required">
 					<label for="nachname">Nachname</label>
 					<div class="control">
-						<input id="nachname" type="text" placeholder="Nachname" required >
+						<input id="nachname" name="nachname" type="text" placeholder="Nachname" maxlength="15" required >
 					</div>
 				</div>
 				<div class="control-group required">
 					<label for="telefon">Telefonnummer</label>
 					<div class="control">
-						<input id="telefon" type="tel" placeholder="02732/123456" required>
+						<input id="telefon" name="telefon" type="tel" placeholder="02732/123456" maxlength="20" required>
 					</div>
 				</div>
 				<div class="control-group">
-					<label for="telefon">E-Mail Adresse</label>
+					<label for="email">E-Mail Adresse</label>
 					<div class="control">
-						<input id="telefon" type="email" placeholder="mail@example.com">
+						<input id="email" name="email" type="email" placeholder="mail@example.com" maxlength="25">
 					</div>
 				</div>
 				<div class="column-group gutters">
-					<div class="control-group all-50 small-100 tiny-100">
-						<label for="name">Plätze</label>
+					<div class="all-20 small-100 tiny-100 medium-100">
+						<label for="anzahl">Sitzplätze</label>
+					</div>
+					<div class="control-group all-40 small-100 tiny-100 medium-50">
 						<div class="control">
-							<input id="anzahl" type="number" required max="10" min="1" onchange="preis()" onkeypress="preis()" onpaste="preis()" oncut="()" onkeyup="preis()">
+							<input id="anzahl" name="anzahl" type="number" max="10" min="1" value="1" required onchange="preis()" onkeypress="preis()" onpaste="preis()" oncut="()" onkeyup="preis()">
 						</div>
 					</div>
-					<div class="control-group all-50 small-100 tiny-100">
-						<p class="push-middle">a 5€ = <span id="preis" class="fw-500">0</span>€</p>
+					<div class="control-group all-40 small-100 tiny-100 medium-50">
+						<p class="push-middle">à 5€ = <span id="preis" class="fw-500">0</span>€</p>
 					</div>
 				</div>
-				<input type="submit" class="ink-button">
+                <div class="control-group">
+                    <label for="anmerkung">Anmerkung</label>
+                    <div class="control">
+                        <textarea id="anmerkung" name="anmerkung" maxlength="500" placeholder="maximal 500 Zeichen"></textarea>
+                    </div>
+                </div>
+		 		<input type="submit" class="ink-button">
 			</form>
 		</div>
 	</div>
