@@ -51,7 +51,7 @@ if (isset($_POST["vorname"])) {
 		echo "<p>Die Daten, die eingegeben wurden, sind ungültig. Entweder wurden Pflichtfelder frei gelassen oder bei der Platzanzahl keine Zahl eingegeben.</p><p><a href='javascript:history.back();'>Zurück zum Formular</a></p>";
 	}
 } else {
-	echo "<p>Diese Seite kann nicht direkt aufgerufen werden.<p><p><strong>Bitte gehe <a href='formular.html'>zum Formular</a>!</strong></p>";
+	echo "<p>Diese Seite kann nicht direkt aufgerufen werden.<p><p><strong>Bitte gehe <a href='./formular.html'>zum Formular</a>!</strong></p>";
 }
 
 
