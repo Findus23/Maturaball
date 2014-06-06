@@ -50,7 +50,7 @@ $mysqli->close();
 
 
 } else {
-	echo "<p>Du bist nicht angemeldet. Bitte <a href='login.php'>melde dich an</a>!</p>";
+	echo "<p>Du bist nicht angemeldet. Bitte <a href='../intern/login.php'>melde dich an</a>!</p>";
 }
 
 ?>
