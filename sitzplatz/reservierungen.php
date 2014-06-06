@@ -23,7 +23,7 @@
 session_start();
 if (isset($_SESSION['user']) && isset($_SESSION['user_id'])) {
 
-require_once "verbindungsaufbau.php"; //mit Server verbinden
+require_once "../intern/verbindungsaufbau.php"; //mit Server verbinden
 $ergebnis = $mysqli->query("SELECT reserv_id,vorname,nachname,telefonnummer,email,anzahl,datum,bezahlt,name,bearb_datum FROM reservierungen LEFT JOIN benutzer ON bearbeiter = user_id");
 echo "<table border='1'>\n";
 echo "<tr><th>Vorname</th><th>Nachname</th><th>Telefon</th><th>E-Mail</th><th>Anzahl</th><th>Preis</th><th>Datum</th><th>Bezahlt</th><th>bearbeitet von</th><th>Datum</th>"; //Zeile mit Überschriften

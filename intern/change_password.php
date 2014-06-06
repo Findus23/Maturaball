@@ -28,7 +28,7 @@ if (isset($_POST["new_password1"]) && !empty($_POST["new_password1"]) && !empty(
 	$new_password1 = $_POST["new_password1"];
 	$new_password2 = $_POST["new_password2"];
 	if ($new_password1 != $new_password2) { // überprüfen ob beide Passwörter übereinstimmen
-		echo "<strong>Die beiden neuen Passworter unterscheiden sich</strong>";
+		echo "<strong>Die beiden neuen Passwörter unterscheiden sich</strong>";
 		exit();
 	}
 	$salt = getenv('WEBSITE_SALT');

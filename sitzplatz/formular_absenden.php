@@ -29,7 +29,7 @@ if (isset($_POST["vorname"])) {
 		require_once 'funktionen.php';
 		$inhalt="Es gibt eine neue Sitzplatzreservierung von " . $vorname . " " . $nachname . "!";
 		email("maturaball@kremszeile.at", "Neue Sitzplatzreservierung", $inhalt, "");
-		require_once "verbindungsaufbau.php";
+		require_once "../intern/verbindungsaufbau.php";
 		if ($stmt = $mysqli->prepare("INSERT INTO reservierungen (vorname,nachname,telefonnummer,email,anzahl,anmerkung,datum) VALUES (?, ?, ?, ?, ?, ?, ?)")) {   // Der SQL-Befehl wird vorbereitet ...
 			$stmt->bind_param("ssssiss",$vorname,$nachname,$telefon,$email,$anzahl,$anmerkung,$zeit);               // ... eingesetzt ...
 			if ($stmt->execute()) { // ... und ausgeführt
