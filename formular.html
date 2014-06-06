@@ -65,7 +65,7 @@
 		
 		<style type="text/css">
 			html {
-				background-image: url(hintergrund.png);
+				background-image: url(images/hintergrund.png);
 				background-attachment: fixed;
 			}
 			#logo img {
@@ -86,7 +86,7 @@
 			}
 			input:invalid {
 				border-color: rgba(200, 10, 16, 0.8) !important;
-				-webkit-box-shadow: rgba(0, 0, 0, 0.2) 0 1px 1px inset !important;;
+				-webkit-box-shadow: rgba(0, 0, 0, 0.2) 0 1px 1px inset !important;
 				-moz-box-shadow: rgba(0, 0, 0, 0.2) 0 1px 1px inset;
 				box-shadow: rgba(0, 0, 0, 0.2) 0 1px 1px inset;
  				border: 1px solid rgba(200, 10, 16, 0.5) !important;
@@ -159,14 +159,20 @@
 				</div>
 				<div class="control-group required">
 					<label for="telefon">Telefonnummer</label>
-					<div class="control">
-						<input id="telefon" name="telefon" type="tel" placeholder="02732/123456" maxlength="20" required>
+					<div class="control prepend-symbol">
+						<span>
+							<input id="telefon" name="telefon" type="tel" placeholder="02732/123456" maxlength="20" required>
+							<i class="fa fa-phone"></i>
+						</span>
 					</div>
 				</div>
 				<div class="control-group">
 					<label for="email">E-Mail Adresse</label>
-					<div class="control">
-						<input id="email" name="email" type="email" placeholder="mail@example.com" maxlength="25">
+					<div class="control prepend-symbol">
+						<span>
+							<input id="email" name="email" type="email" placeholder="mail@example.com" maxlength="25">
+							<i class="fa fa-envelope-o"></i>
+						</span>
 					</div>
 				</div>
 				<div class="column-group gutters">
@@ -174,20 +180,26 @@
 						<label for="anzahl">Sitzplätze</label>
 					</div>
 					<div class="control-group all-40 small-100 tiny-100 medium-50">
-						<div class="control">
-							<input id="anzahl" name="anzahl" type="number" max="10" min="1" value="1" required onchange="preis()" onkeypress="preis()" onpaste="preis()" oncut="()" onkeyup="preis()">
+						<div class="control prepend-symbol">
+							<span>
+								<input id="anzahl" name="anzahl" type="number" max="10" min="1" value="1" required onchange="preis()" onkeypress="preis()" onpaste="preis()" oncut="()" onkeyup="preis()">
+								<i class="fa fa-ticket"></i>
+							</span>
 						</div>
 					</div>
 					<div class="control-group all-40 small-100 tiny-100 medium-50">
 						<p class="push-middle">à 5€ = <span id="preis" class="fw-500">0</span>€</p>
 					</div>
 				</div>
-                <div class="control-group">
-                    <label for="anmerkung">Anmerkung</label>
-                    <div class="control">
-                        <textarea id="anmerkung" name="anmerkung" maxlength="500" placeholder="maximal 500 Zeichen"></textarea>
-                    </div>
-                </div>
+				<div class="control-group">
+					<label for="anmerkung">Anmerkung</label>
+					<div class="control prepend-symbol">
+						<span>
+							<textarea id="anmerkung" name="anmerkung" maxlength="500" placeholder="maximal 500 Zeichen"></textarea>
+							<i class="fa fa-pencil-square-o"></i>
+						</span>
+					</div>
+				</div>
 		 		<input type="submit" class="ink-button">
 			</form>
 		</div>
