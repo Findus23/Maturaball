@@ -13,6 +13,9 @@
 				background-color: #FF9999;
 				display:block;
 			}
+			table {
+				width:100%;
+			}
 		</style>
 	</head>
 
@@ -35,15 +38,17 @@ while ($zeile = $ergebnis->fetch_array()) { // für jeden Wert in der Datenbank 
 			$bezahlt="Nein";
 		}
 		echo "<tr>\n<td>" . htmlspecialchars($zeile["vorname"]) . "</td>\n"
-        . "<td>" . htmlspecialchars($zeile['nachname']) . "</td>\n"
-        . "<td>" . htmlspecialchars($zeile['telefonnummer']) . "</td>\n"
-        . "<td><a href='mailto:" . htmlspecialchars($zeile['email']) . "'>" . htmlspecialchars($zeile['email'])  . "</a></td>\n"
-        . "<td>" . htmlspecialchars($zeile['anzahl']) . "</td>\n"
-        . "<td>" . $preis . "€</td>\n"
-        . "<td>" . htmlspecialchars($zeile['datum']) . "</td>\n"
-        . "<td class='" . $bezahlt . "'><a href='./bezahlen.php?id=" . htmlspecialchars($zeile['reserv_id']) . "&bezahlt=" . $bezahlt . "'><b>" . $bezahlt . "</b></a></td>\n"
-        . "<td>" . htmlspecialchars($zeile['name']) . "</td>\n"
-        . "<td>" . htmlspecialchars($zeile['bearb_datum']) . "</td>\n</tr>\n\n";
+		. "<td>" . htmlspecialchars($zeile['nachname']) . "</td>\n"
+		. "<td>" . htmlspecialchars($zeile['telefonnummer']) . "</td>\n"
+		. "<td><a href='mailto:" . htmlspecialchars($zeile['email']) . "'>" . htmlspecialchars($zeile['email'])  . "</a></td>\n"
+		. "<td>" . htmlspecialchars($zeile['anzahl']) . "</td>\n"
+		. "<td>" . $preis . "€</td>\n"
+		. "<td>" . htmlspecialchars($zeile['datum']) . "</td>\n"
+		. "<td class='" . $bezahlt . "'><a href='./bezahlen.php?id=" . htmlspecialchars($zeile['reserv_id']) . "&bezahlt=" . $bezahlt . "'><b>" . $bezahlt . "</b></a></td>\n"
+		. "<td>" . htmlspecialchars($zeile['name']) . "</td>\n"
+		. "<td>" . htmlspecialchars($zeile['bearb_datum']) . "</td>\n"
+		. "<td class='" . $bezahlt . "'><a href='./delete.php?id=" . htmlspecialchars($zeile['reserv_id']) . "'><b>Löschen</b></a></td>\n</tr>\n\n";
+		
 }
 $ergebnis->close();
 $mysqli->close();
