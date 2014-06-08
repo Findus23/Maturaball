@@ -50,8 +50,6 @@ if (!isset($_SESSION['user']) || $logout == TRUE ) { // wenn noch nicht angemeld
 	<meta charset="utf-8" />
 	<title>Login</title>
 	<meta name="author" content="Lukas Winkler" >
-	<!-- hier schön designtes Anmeldeformular einfügen -->
-
 </head>
 
 <body>
@@ -78,7 +76,8 @@ if ($logout == TRUE) {
 
 <?php
 } else { //wenn man erfolgreich angemeldet wurde
-echo "Hallo " . $_SESSION['user'] . " - <a href='./login.php?logout=yes'>Abmelden</a>";
+echo "<p>Hallo " . $_SESSION['user'] . " - <a href='./login.php?logout=yes'>Abmelden</a></p>";
+echo "<p><a href='../sitzplatz/reservierungen.php'>Zur Webseite</a></p>";
 }
 ?>
 
