@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="de">
+	<head>
+		<!-- auf jeder Seite identisch -->
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="HandheldFriendly" content="True">
+		<meta name="MobileOptimized" content="320">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		
+		<!-- eigene META-Angaben -->
+		<title>Template</title>
+		<meta name="author" content="Lukas Winkler,Janine Roupec" >
+		<meta name="date" content="2014-06-06T14:40:49+0200" >
+		<meta name="generator" content="Bluefish 2.2.6" >
+		<meta name="description" content="Ali Baba und die 40 Maturanten – Der Maturaball des Bg Rechte Kremszeile 2014 in der Römerhalle Mautern">
+		<meta name="language" content="DE">
+		<meta name="designer" content="Karin Geishofer,Lukas Winkler">
+		<meta property="og:title" content="Ali Baba und die 40 Maturanten – Der Maturaball des Bg Rechte Kremszeile 2014">
+		<meta property="og:type" content="website">
+		<meta property="og:image" content=""> <!-- quadratisches Bild für Facebook und andere Webseiten -->
+		<meta property="og:url" content="http://maturaball.kremszeile.at">
+		<meta name="og:latitude" content="48.394809">
+		<meta name="og:longitude" content="-122.153013">
+		<meta name="og:street-address" content="Am Limes 1">
+		<meta name="og:locality" content="Mautern an der Donau">
+		<meta name="og:postal-code" content="3512">
+		<meta name="og:country-name" content="AT">
+		<meta name="og:email" content="maturaball@kremszeile.at">
+		<!-- Place favicon.ico and apple-touch-icon(s) here  -->
+
+		<link rel="shortcut icon" href="../img/favicon.ico">
+		<link rel="apple-touch-icon-precomposed" href="./img/touch-icon.57.png">
+		<link rel="apple-touch-icon-precomposed" sizes="72x72" href="./img/touch-icon.72.png">
+		<link rel="apple-touch-icon-precomposed" sizes="114x114" href="./img/touch-icon.114.png">
+
+		<!-- load inks CSS -->
+		<link rel="stylesheet" type="text/css" href="./css/ink-flex.min.css">
+		<link rel="stylesheet" type="text/css" href="./css/font-awesome.min.css">
+
+		<!-- load inks CSS for IE8 -->
+		<!--[if lt IE 9 ]>
+			<link rel="stylesheet" href="./css/ink-ie.min.css" type="text/css" media="screen" title="no title" charset="utf-8">
+		<![endif]-->
+
+		<!-- test browser flexbox support and load legacy grid if unsupported -->
+		<script type="text/javascript" src="./js/modernizr.js"></script>
+		<script type="text/javascript">
+			Modernizr.load({
+				test: Modernizr.flexbox,
+				nope : './css/ink-legacy.min.css'
+			});
+		</script>
+
+		<!-- load inks javascript files -->
+		<script type="text/javascript" src="./js/holder.js"></script>
+		<script type="text/javascript" src="./js/ink-all.min.js"></script>
+		<script type="text/javascript" src="./js/autoload.js"></script>
+		
+		<!-- Heise-Facebook-buttons -->
+		<script type="text/javascript" src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+		<script type="text/javascript" src="socialshareprivacy/jquery.socialshareprivacy.js"></script>
+		<script type="text/javascript">
+			jQuery(document).ready(function($){
+				if($('#socialshareprivacy').length > 0){
+					$('#socialshareprivacy').socialSharePrivacy({
+						"css_path"	: "socialshareprivacy/socialshareprivacy.css",
+						"lang_path"	: "socialshareprivacy/lang/",
+						"language"	: "de",
+						"alignment": "vertical",
+						"perma_orientation": "top",
+						"url" : "http://maturaball.kremszeile.at",
+						 services : {
+							facebook : {
+								sharer: {
+									"status": "on",
+									"dummy_img": "socialshareprivacy/images/dummy_facebook_share_de.png",
+									"img": "socialshareprivacy/images/facebook_share_de.png",
+
+								}
+							}
+						}
+					});
+				}
+			});
+		</script>
+		<style type="text/css">
+			html {
+				background-image: url(images/hintergrund.png);
+				background-attachment: fixed;
+			}
+			#logo img {
+				display: block;
+				margin: 20px auto;
+				max-width: 750px;
+			}
+			#banner img {
+				display: block;
+				margin: 0 auto;
+				width: 100%;
+			}
+			#page,footer {
+				padding-top: 20px;
+				background-color: lightgrey;
+			}
+			#main, #sidebar-links {
+				padding: 20px;
+			}
+		</style>
+
+
+	</head>
+
+<body>
+<!--[if lte IE 9 ]>
+<div class="ink-alert block error">
+	<button class="ink-dismiss">&times;</button>
+	<p>
+	<strong>Du verwendest eine stark veralterte Version des Internet Explorers!</strong>
+	Bitte <a href="http://browsehappy.com/">aktualisiere deinen Browser</a> für ein besseres Internet-Erlebnis!
+	</p>
+</div>
+-->
+
+	<!-- Seiteninhalt -->
+
+<div id="logo">
+	<img src="images/Schrift2.png" alt="Logo">
+</div>
+<div id="navigation">
+	<nav class="ink-navigation ink-grid">
+		<ul class="menu horizontal black push-center">
+			<li><a href="./">Home</a></li>
+			<li><a href="info.html">Info</a></li>
+			<li><a href="news.html">News</a>
+			<ul class="submenu">
+				<li><a href="#">Unterpunkt zu 3</a></li>
+			</ul>
+			</li>
+			<li><a href="sponsoren.html">Sponsoren</a></li>
+			<li class="heading"><a href="impressum.html">Impressum</a></li>
+		</ul>
+	</nav>
+</div>
+<div class="ink-grid" id="wrapper">
+	<div id="banner">
+		<img src="images/Banner.png" alt="Banner">
+	</div>
+	<div id="page" class="column-group">
+		<div class="all-20 tiny-100 small-100 medium-100" id="sidebar-links">
+			<h2>Seitenleiste</h2>
+			<a href="#FACEBOOK-SEITE" target="_blank"><img alt="Finde uns auf Facebook!" title="Finde uns auf Facebook!" src="images/FB_FindUsOnFacebook-320.png" /></a>
+			<div id="socialshareprivacy"></div>
+		</div>
+		<div id="main" class="all-80 tiny-100 small-100">
+			<h1>Impressum</h1>
+			<p><!--Hier kommt die Beschreibung der Person--></p>
+			<h2>Seite erstellt von:</h2>
+				<ul>
+					<li>Lukas Winkler (Webdesign und Programmierung)</li>
+					<li>Karin Geishofer (Design und Gestaltung)</li>
+					<li>Janine Roupec (Inhalte und Texte)</li>
+				</ul>
+			<h2>Bilder</h2>
+			<!--Quellen für von Karin verwendete Bilder und Brushes-->
+			<h2>Datenschutz</h2>
+			<!-- Datenschutzerklärung und Piwik-Opt-Out -->
+			<p>Diese Website nutzt die Open-Source-Software Piwik für die statistische Auswertung von Besucherzugriffen. 
+				Piwik ist datenschutzkonform konfiguriert, Daten werden anonymisiert gespeichert werden. 
+				Die zu diesem Zweck verwendeten  „Sitzungs-Cookies” sind Textdateien, die nur temporär auf Ihrem Computer gespeichert werden. 
+				Sobald der Webbrowser geschlossen wird, werden sie wieder gelöscht. Sie können die Datenerfassung durch Piwik hier deaktivieren. 
+				Sofern Ihr Browser die <a href="http://donottrack.us/">"Do-Not-Track"-Technik</a> unterstützt und Sie diese aktiviert haben, wird ihr Besuch automatisch ignoriert.
+				<br />
+				Die von Piwik erfassten Daten werden nicht und niemals auf andere Server übertragen oder an Dritte weitergegeben, 
+				sondern in anonymisierter Form dazu verwendet, unser Angebot zu verbessern. IP-Adressen werden in Piwik ohne das letzte Tupel gespeichert. 
+				Wir wissen, aus welchem Netz eine Anfrage kam, nicht jedoch von welchem Rechner. 
+				Durch die Nutzung dieser Website erklären Sie sich mit der Bearbeitung der über Sie erhobenen Daten 
+				durch Piwik in der zuvor beschriebenen Art und Weise und zu dem zuvor benannten Zweck einverstanden.</p>
+<p><iframe src="http://www.noe-schultennis.at/statistik/index.php?module=CoreAdminHome&amp;action=optOut&amp;language=de" width="100%" height="170px" frameborder="no"></iframe></p>
+		</div>
+	</div>
+	<div id="footer">
+		<footer>
+			
+		</footer>
+	</div>
+</div>
+</body>
+</html>
