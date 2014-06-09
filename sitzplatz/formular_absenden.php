@@ -28,7 +28,7 @@ if (isset($_POST["vorname"])) {
 		}
 		require_once 'funktionen.php';
 		$inhalt="Es gibt eine neue Sitzplatzreservierung von " . $vorname . " " . $nachname . "!";
-		email("maturaball@kremszeile.at", "Neue Sitzplatzreservierung", $inhalt, "");
+		email("maturaball@kremszeile.at", "Neue Sitzplatzreservierung", $inhalt, ""); //Benachrichtungs-Mail an Zuständige
 		require_once "../intern/verbindungsaufbau.php";
 		if ($stmt = $mysqli->prepare("INSERT INTO reservierungen (vorname,nachname,telefonnummer,email,anzahl,anmerkung,datum) VALUES (?, ?, ?, ?, ?, ?, ?)")) {   // Der SQL-Befehl wird vorbereitet ...
 			$stmt->bind_param("ssssiss",$vorname,$nachname,$telefon,$email,$anzahl,$anmerkung,$zeit);               // ... eingesetzt ...
@@ -41,7 +41,11 @@ if (isset($_POST["vorname"])) {
 			echo "<p><strong>Es trat ein Problem beim Speichern auf.</strong></p>"; //unwahrscheinlich -- Fehler beim Vorbereiten des Befehls
 		}
 		$inhalt="Inhalt der Bestätigungsmail";
-		email($email, "Bestätigung der Sitzplatzreservierung", $inhalt, "<p>Eine Bestätigungsemail wurde erfolgreich versandt.</p>");
+		if (!empty($email)) { // Wenn eine E-Mail Adresse angegeben wurde, eine Bestätigungsmail verschicken
+			email($email, "Bestätigung der Sitzplatzreservierung", $inhalt, "<p>Eine Bestätigungsemail wurde erfolgreich versandt.</p>");
+		} else {
+			echo "<p>Es wurde keine Bestätigungsemail verschickt, weil keine E-Mail angegeben wurde";
+		}
 		$stmt->close(); //Speicherplatz freigeben
 		$mysqli->close();
 		

@@ -58,11 +58,12 @@ if (isset($_SESSION['user']) && isset($_SESSION['user_id'])) {
 		<li>Hallo <?php echo $_SESSION["user"] ?></li>
 		<li><a href="../intern/login.php">Abmelden</a></li>
 		<li><a href="../intern/change_password.php">Passwort ändern</a></li>
+		<li><a href='#' onclick="javascript:window.print();returnfalse">Drucken</a></li>
 	</ul>
 </nav>
 <?php
 require_once "../intern/verbindungsaufbau.php"; //mit Server verbinden
-$ergebnis = $mysqli->query("SELECT reserv_id,vorname,nachname,telefonnummer,email,anzahl,datum,bezahlt,name,bearb_datum,anmerkung FROM reservierungen LEFT JOIN benutzer ON bearbeiter = user_id");
+$ergebnis = $mysqli->query("SELECT reserv_id,vorname,nachname,telefonnummer,email,anzahl,datum,bezahlt,name,bearb_datum,anmerkung FROM reservierungen LEFT JOIN benutzer ON bearbeiter = user_id ORDER BY datum");
 echo "<table border='1'>\n";
 echo "<tr><th>Vorname</th><th>Nachname</th><th>Telefon</th><th>E-Mail</th><th>Anzahl</th><th>Preis</th><th class='anmerkung'>Anmerkung</th><th>Datum</th><th>Bezahlt</th><th>bearbeitet von</th><th>Datum</th><th class='delete'>löschen</th>"; //Zeile mit Überschriften
 while ($zeile = $ergebnis->fetch_array()) { // für jeden Wert in der Datenbank eine Tabellenzeile
