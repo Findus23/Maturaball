@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="de">
+	<head>
+		<!-- auf jeder Seite identisch -->
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="HandheldFriendly" content="True">
+		<meta name="MobileOptimized" content="320">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		
+		<!-- eigene META-Angaben -->
+		<title>Design</title>
+		<meta name="author" content="Lukas Winkler,Janine Roupec" >
+		<meta name="description" content="Du bist nicht berechtigt diese Seite zu sehen">
+		<meta name="language" content="DE">
+		<meta name="designer" content="Karin Geishofer,Lukas Winkler">
+		<!-- Place favicon.ico and apple-touch-icon(s) here  -->
+
+		<link rel="shortcut icon" href="../img/favicon.ico">
+		<link rel="apple-touch-icon-precomposed" href="./img/touch-icon.57.png">
+		<link rel="apple-touch-icon-precomposed" sizes="72x72" href="./img/touch-icon.72.png">
+		<link rel="apple-touch-icon-precomposed" sizes="114x114" href="./img/touch-icon.114.png">
+
+		<!-- load inks CSS -->
+		<link rel="stylesheet" type="text/css" href="./css/ink-flex.min.css">
+		<link rel="stylesheet" type="text/css" href="./css/font-awesome.min.css">
+
+		<!-- Eigene CSS-Datei -->
+		<link rel="stylesheet" type="text/css" href="style.css">
+
+		<!-- load inks CSS for IE8 -->
+		<!--[if lt IE 9 ]>
+			<link rel="stylesheet" href="./css/ink-ie.min.css" type="text/css" media="screen" title="no title" charset="utf-8">
+		<![endif]-->
+
+		<!-- test browser flexbox support and load legacy grid if unsupported -->
+		<script type="text/javascript" src="./js/modernizr.js"></script>
+		<script type="text/javascript">
+			Modernizr.load({
+				test: Modernizr.flexbox,
+				nope : './css/ink-legacy.min.css'
+			});
+		</script>
+
+		<!-- load inks javascript files -->
+		<script type="text/javascript" src="./js/holder.js"></script>
+		<script type="text/javascript" src="./js/ink-all.min.js"></script>
+		<script type="text/javascript" src="./js/autoload.js"></script>
+
+	</head>
+
+<body>
+<!--[if lte IE 9 ]>
+<div class="ink-alert block error">
+	<button class="ink-dismiss">&times;</button>
+	<p>
+	<strong>Du verwendest eine stark veralterte Version des Internet Explorers!</strong>
+	Bitte <a href="http://browsehappy.com/">aktualisiere deinen Browser</a> für ein besseres Internet-Erlebnis!
+	</p>
+</div>
+-->
+
+	<!-- Seiteninhalt -->
+
+<div id="logo">
+	<img src="images/Schrift2.png" alt="Logo">
+</div>
+<div id="navigation">
+	<nav class="ink-navigation ink-grid">
+		<ul class="menu horizontal black push-center">
+			<li class="heading"><a href="./">Home</a></li>
+			<li><a href="info.html">Info</a></li>
+			<li><a href="news.html">News</a>
+			<ul class="submenu">
+				<li><a href="#">Unterpunkt zu 3</a></li>
+			</ul>
+			</li>
+			<li><a href="formular.html">Sitzplatzreservierung</a></li>
+			<li><a href="sponsoren.html">Sponsoren</a></li>
+			<li><a href="impressum.html">Impressum</a></li>
+		</ul>
+	</nav>
+</div>
+<div class="ink-grid" id="wrapper">
+	<div id="banner">
+		<img src="images/Banner.png" alt="Banner">
+	</div>
+	<div id="page" class="column-group">
+		<div class="all-20 tiny-100 small-100 medium-100" id="sidebar-links">
+			<h2>Seitenleiste</h2>
+			<a href="#FACEBOOK-SEITE" target="_blank"><img alt="Finde uns auf Facebook!" title="Finde uns auf Facebook!" src="images/FB_FindUsOnFacebook-320.png" /></a>
+		</div>
+		<div id="main" class="all-80 tiny-100 small-100">
+		<h1>Es ist ein Fehler aufgetreten!</h1>
+		<p>Du bist nicht berechtigt diese Seite zu sehen.</p>
+		<p><a href="./">Gehe zur Hauptseite</a></p>
+		</div>
+	</div>
+	<div id="footer">
+		<footer>
+			
+		</footer>
+	</div>
+</div>
+</body>
+</html>
