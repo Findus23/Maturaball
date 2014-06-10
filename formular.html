@@ -10,13 +10,11 @@
 		
 		<!-- eigene META-Angaben -->
 		<title>Ticketreservierung</title>
-		<meta name="author" content="Lukas Winkler" >
-		<meta name="date" content="2014-06-03T19:56:44+0200" >
-		<meta name="generator" content="Bluefish 2.2.6" >
-		<meta name="description" content="Ali Baba und die 40 Maturanten – Der Maturaball des Bg Rechte Kremszeile 2014 in der Römerhalle Mautern">
+		<meta name="author" content="Lukas Winkler,Janine Roupec" >
+		<meta name="description" content="Sitzplatzreservierung für den Maturaball des Bg Rechte Kremszeile 2014 – Ali Baba und die 40 Maturanten">
 		<meta name="language" content="DE">
 		<meta name="designer" content="Karin Geishofer,Lukas Winkler">
-		<meta property="og:title" content="Ali Baba und die 40 Maturanten – Der Maturaball des Bg Rechte Kremszeile 2014">
+		<meta property="og:title" content="Sitzplatzreservierung für den Maturaball des Bg Rechte Kremszeile 2014 – Ali Baba und die 40 Maturanten">
 		<meta property="og:type" content="website">
 		<meta property="og:image" content=""> <!-- quadratisches Bild für Facebook und andere Webseiten -->
 		<meta property="og:url" content="http://maturaball.kremszeile.at">
@@ -37,6 +35,9 @@
 		<!-- load inks CSS -->
 		<link rel="stylesheet" type="text/css" href="./css/ink-flex.min.css">
 		<link rel="stylesheet" type="text/css" href="./css/font-awesome.min.css">
+
+		<!-- Eigene CSS-Datei -->
+		<link rel="stylesheet" type="text/css" href="style.css">
 
 		<!-- load inks CSS for IE8 -->
 		<!--[if lt IE 9 ]>
@@ -84,43 +85,12 @@
 				}
 			});
 		</script>
-		<style type="text/css">
-			html {
-				background-image: url(images/hintergrund.png);
-				background-attachment: fixed;
-			}
-			#logo img {
-				display: block;
-				margin: 20px auto;
-				max-width: 750px;
-			}
-			#banner img {
-				display: block;
-				margin: 0 auto;
-				width: 100%;
-			}
-			#page,footer {
-				padding-top: 20px;
-				background-color: lightgrey;
-			}
-			#main, #sidebar-links {
-				padding: 20px;
-			}
-			input:invalid {
-				border-color: rgba(200, 10, 16, 0.8) !important;
-				-webkit-box-shadow: rgba(0, 0, 0, 0.2) 0 1px 1px inset !important;
-				-moz-box-shadow: rgba(0, 0, 0, 0.2) 0 1px 1px inset;
-				box-shadow: rgba(0, 0, 0, 0.2) 0 1px 1px inset;
- 				border: 1px solid rgba(200, 10, 16, 0.5) !important;
-			}
-		</style>
 		<script type="text/javascript">
 			function preis() {
 				anzahl=document.getElementById('anzahl').value;
 				document.getElementById('preis').innerHTML=anzahl*5;
 			}
 		</script>
-
 
 	</head>
 

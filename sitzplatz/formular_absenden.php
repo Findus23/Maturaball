@@ -48,6 +48,7 @@ if (isset($_POST["vorname"])) {
 		}
 		$stmt->close(); //Speicherplatz freigeben
 		$mysqli->close();
+		echo "<p><strong><a href='../'>Zurück zur Hauptseite</a></strong></p>";
 		
 
 		
