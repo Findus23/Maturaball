@@ -2,21 +2,17 @@ html {
 	background-image: url(images/hintergrund.png);
 	background-attachment: fixed;
 }
-#logo img {
-	display: block;
-	margin: 20px auto;
+#top img {
 	width:100%;
-	max-width: 750px;
-}
-#banner img {
-	display: block;
-	margin: 0 auto;
-	width: 100%;
 }
 #page,footer {
 	padding-top: 20px;
-/*	background-color: #efd767;*/
-	background: -webkit-linear-gradient(left, #EBD77A , #E2BE2C)
+	background-color: #efd767; /* Falls die Farbverläufe nicht unterstützt werden, einfach den Hintergrund einfärbig machen */
+	background: -webkit-linear-gradient(left, #EBD77A , #E2BE2C);
+	background: -o-linear-gradient(left, #EBD77A , #E2BE2C);
+	background: -moz-linear-gradient(left, #EBD77A , #E2BE2C);
+	background: linear-gradient(left, #EBD77A , #E2BE2C);
+
 }
 #main, #sidebar-links {
 	padding: 20px;
