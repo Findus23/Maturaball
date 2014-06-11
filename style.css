@@ -15,7 +15,8 @@ html {
 }
 #page,footer {
 	padding-top: 20px;
-	background-color: #D3D3D3;
+/*	background-color: #efd767;*/
+	background: -webkit-linear-gradient(left, #EBD77A , #E2BE2C)
 }
 #main, #sidebar-links {
 	padding: 20px;
@@ -33,4 +34,10 @@ input:invalid {
 	-moz-box-shadow: rgba(0, 0, 0, 0.2) 0 1px 1px inset;
 	box-shadow: rgba(0, 0, 0, 0.2) 0 1px 1px inset;
  	border: 1px solid rgba(200, 10, 16, 0.5) !important;
+}
+#navigation nav ul {
+	background-color: black;
+}
+#navigation nav ul li a:hover {
+	background-color: darkgray!important;
 }
