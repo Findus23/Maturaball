@@ -9,7 +9,7 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		
 		<!-- eigene META-Angaben -->
-		<title>Design</title>
+		<title>Seite nicht gefunden</title>
 		<meta name="author" content="Lukas Winkler,Janine Roupec" >
 		<meta name="description" content="Die Seite, die du suchst existiert nicht!">
 		<meta name="language" content="DE">
@@ -56,6 +56,7 @@
 		    var u=(("https:" == document.location.protocol) ? "https" : "http") + "://piwik.kremszeile.at/";
 		    _paq.push(['setTrackerUrl', u+'piwik.php']);
 		    _paq.push(['setSiteId', 1]);
+		    _paq.push(['setDocumentTitle',  '404/URL = ' +  encodeURIComponent(document.location.pathname+document.location.search) + '/From = ' + encodeURIComponent(document.referrer)]); // 404-Seiten auch tracken
 		    var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0]; g.type='text/javascript';
 		    g.defer=true; g.async=true; g.src=u+'piwik.js'; s.parentNode.insertBefore(g,s);
 		  })();
