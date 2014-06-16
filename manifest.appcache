@@ -1,0 +1,39 @@
+CACHE MANIFEST
+index_.html
+news.html
+sponsoren.html
+impressum.html
+formular.html
+#Fehlerseiten
+404.html
+offline.html
+# eigene Dateien
+style.css
+favicon.ico
+#
+css/ink-flex.min.css
+css/font-awesome.min.css
+js/modernizr.js
+js/holder.js
+js/ink-all.min.js
+js/autoload.js
+socialshareprivacy/jquery.socialshareprivacy.js
+images/CLUB_Logo.jpg
+images/Schrift2.png
+images/Schullogo.png
+images/FB_FindUsOnFacebook-320.png
+images/hintergrund.png
+images/Banner.png
+css/font-awesome.min.css
+socialshareprivacy/jquery.socialshareprivacy.js
+fonts/Roboto/roboto-medium-webfont.woff
+fonts/Roboto/roboto-light-webfont.woff
+fonts/Roboto/roboto-bold-webfont.woff
+fonts/Roboto/roboto-regular-webfont.woff
+fonts/Roboto/roboto-italic-webfont.woff
+fonts/fontawesome-webfont.woff?v=4.0.3
+#
+NETWORK:
+*
+FALLBACK:
+/ offline.html
