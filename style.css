@@ -21,6 +21,9 @@ html {
 	float: left;
 	margin: 10px;
 }
+#hauptsponsoren img {
+	max-width: 250px;;
+}
 h2 {
 	clear: both;
 }
@@ -36,4 +39,7 @@ input:invalid {
 }
 #navigation nav ul li a:hover {
 	background-color: darkgray!important;
+}
+img {
+	margin: 20px;
 }
