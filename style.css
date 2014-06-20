@@ -43,6 +43,6 @@ input:invalid {
 #navigation nav ul li a:hover {
 	background-color: darkgray!important;
 }
-img {
+#page img {
 	margin: 20px;
 }
