@@ -22,7 +22,10 @@ html {
 	margin: 10px;
 }
 #hauptsponsoren img {
-	max-width: 250px;;
+	max-width: 200px;;
+}
+#nebensponsoren img {
+	max-width: 150px;;
 }
 h2 {
 	clear: both;
