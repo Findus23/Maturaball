@@ -69,30 +69,56 @@
 		
 		<!-- Heise-Facebook-buttons -->
 		<script type="text/javascript" src="//code.jquery.com/jquery-1.11.0.min.js"></script>
-		<script type="text/javascript" src="socialshareprivacy/jquery.socialshareprivacy.js"></script>
-		<script type="text/javascript">
-			jQuery(document).ready(function($){
-				if($('#socialshareprivacy').length > 0){
-					$('#socialshareprivacy').socialSharePrivacy({
-						"css_path"	: "socialshareprivacy/socialshareprivacy.css",
-						"lang_path"	: "socialshareprivacy/lang/",
-						"language"	: "de",
-						"alignment": "vertical",
-						"perma_orientation": "top",
-						"uri" : "http://maturaball.kremszeile.at",
-						 services : {
-							facebook : {
-								sharer: {
-									"status": "on",
-									"dummy_img": "socialshareprivacy/images/dummy_facebook_share_de.png",
-									"img": "socialshareprivacy/images/facebook_share_de.png",
-
-								}
-							}
-						}
-					});
+		<script type="text/javascript" src="http://panzi.github.io/SocialSharePrivacy/javascripts/jquery.cookies.js"></script>
+		<script type="text/javascript" src="http://panzi.github.io/SocialSharePrivacy/javascripts/jquery.socialshareprivacy.min.autoload.js"></script>
+		<script type="text/javascript" src="http://panzi.github.io/SocialSharePrivacy/javascripts/jquery.socialshareprivacy.min.de.js"></script>
+		<script type="application/x-social-share-privacy-settings">
+		{
+			"path_prefix":	"http://panzi.github.io/SocialSharePrivacy/",
+			"layout":		"box","uri":"http://maturaball.kremszeile.at/",
+			"language":		"de",
+			"order":		["fbshare", "facebook", "twitter", "gplus"],
+			"title":		"Ali Baba und die 40 Maturanten",
+			"description":	"Der Maturaball des Bg Rechte Kremszeile 2014 in der Römerhalle Mautern",
+			"services":{
+				"buffer":{
+					"status":false
+				},
+				"delicious":{
+					"status":false
+				},
+				"disqus":{
+					"status":false
+				},
+				"flattr":{
+					"status":false
+				},
+				"hackernews":{
+					"status":false
+				},
+				"stumbleupon":{
+					"status":false
+				},
+				"xing":{
+					"status":false
+				},
+				"reddit":{
+					"status":false
+				},
+				"pinterest":{
+					"status":false
+				},
+				"tumblr":{
+					"status":false
+				},
+				"linkedin":{
+					"status":false
+				},
+				"mail": {
+					"status":false
 				}
-			});
+			}
+		}
 		</script>
 		<!-- Piwik -->
 		<script type="text/javascript">
@@ -157,7 +183,7 @@
 		<div class="all-20 tiny-100 small-100 medium-100" id="sidebar-links">
 			<h2>Seitenleiste</h2>
 			<a href="https://www.facebook.com/maturaball.kremszeile" target="_blank"><img alt="Finde uns auf Facebook!" title="Finde uns auf Facebook!" src="images/FB_FindUsOnFacebook-320.png" /></a>
-			<div id="socialshareprivacy"></div>
+			<div data-social-share-privacy='true'></div>
 		</div>
 		<div id="main" class="all-80 tiny-100 small-100">
 			<h1>Impressum</h1>
