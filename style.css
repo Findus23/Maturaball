@@ -4,6 +4,7 @@ html {
 }
 #top img {
 	width:100%;
+	margin-top:10px;
 }
 #page,footer {
 	padding-top: 20px;
