@@ -1,4 +1,4 @@
 *.project
 intern/.htaccess
-
+.settings/*
 *.bak
