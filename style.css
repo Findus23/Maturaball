@@ -1,3 +1,12 @@
+@font-face {
+	font-family: 'Claire Hand';
+/*	src: local ('Claire Hand'), */
+	src: url( fonts/ClaireHandRegular.woff),
+		url( fonts/ClaireHandRegular.svg) format('svg'),
+		url( fonts/ClaireHandRegular.ttf) format('truetype');
+		url( fonts/ClaireHandRegular.otf) format('otf');
+}
+
 html {
 	background-image: url(images/hintergrund.png);
 	background-attachment: fixed;
@@ -42,8 +51,16 @@ input:invalid {
 	background-color: black;
 }
 #navigation nav ul li a:hover {
-	background-color: darkgray!important;
+	background-color: #A9A9A9!important;
 }
 #page img {
 	margin: 20px;
+}
+#footer {
+	margin-bottom: 5px;
+	text-align: center;
+}
+
+h1,h2,nav {
+	font-family: Claire Hand;
 }
