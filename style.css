@@ -1,9 +1,9 @@
 @font-face {
 	font-family: 'Claire Hand';
-/*	src: local ('Claire Hand'), */
+/*	src: local ('Claire Hand')*/
 	src: url( fonts/ClaireHandRegular.woff),
 		url( fonts/ClaireHandRegular.svg) format('svg'),
-		url( fonts/ClaireHandRegular.ttf) format('truetype');
+		url( fonts/ClaireHandRegular.ttf) format('truetype'),
 		url( fonts/ClaireHandRegular.otf) format('otf');
 }
 
@@ -62,5 +62,5 @@ input:invalid {
 }
 
 h1,h2,nav {
-	font-family: Claire Hand;
+	font-family: Claire Hand,Roboto,Arial,Helvetica,sans-serif;;
 }
