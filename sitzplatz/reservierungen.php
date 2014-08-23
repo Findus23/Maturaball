@@ -43,6 +43,19 @@
 				}
 			}
 		</style>
+		<script language="JavaScript">
+			function check() {
+				var wert = document.getElementById("anmerkung_check").checked;
+				var zeilen = document.getElementsByClassName('anmerkung'), i;
+				for (var i = 0; i < zeilen.length; i ++) {
+					if(wert == false) {
+						zeilen[i].style.display = 'none';
+					} else {
+						zeilen[i].style.display = 'table-cell'
+					}
+				}
+			}
+		</script>
 	</head>
 
 	<body>
@@ -56,9 +69,10 @@ if (isset($_SESSION['user']) && isset($_SESSION['user_id'])) {
 <nav>
 	<ul>
 		<li>Hallo <?php echo $_SESSION["user"] ?></li>
-		<li><a href="../intern/login.php">Abmelden</a></li>
+		<li><a href="../intern/login.php?logout=yes">Abmelden</a></li>
 		<li><a href="../intern/change_password.php">Passwort ändern</a></li>
 		<li><a href='#' onclick="javascript:window.print();returnfalse">Drucken</a></li>
+		<li><input type="checkbox" name="anmerkung_check" id="anmerkung_check" onchange="check();" > Anmerkungen anzeigen</li>
 	</ul>
 </nav>
 <?php
