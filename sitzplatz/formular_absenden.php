@@ -55,15 +55,19 @@ if (isset($_POST["vorname"])) {
 		} else {
 			echo "<p><strong>Es trat ein Problem beim Speichern auf.</strong></p>"; //unwahrscheinlich -- Fehler beim Vorbereiten des Befehls
 		}
-		$inhalt="Inhalt der Bestätigungsmail";
 		if (!empty($email)) { // Wenn eine E-Mail Adresse angegeben wurde, eine Bestätigungsmail verschicken
-			email($email, "Bestätigung der Sitzplatzreservierung", $inhalt, "<p>Eine Bestätigungsemail wurde erfolgreich versandt.</p>");
+			$inhalt="<p>Hallo " . $vorname . " " . $nachname . "</p>"
+				. "<p>Du hast gerade <strong>" . $anzahl . "</strong> Sitzplätze reserviert. Wir werden uns darum kümmern.</p>"
+				. "<i>Das Maturaball-Team</i>";
+			$empfänger=$vorname . " " . $nachname . " <" . $email . ">";
+			
+			email($empfänger, "Reservierung", $inhalt, "Eine Bestätigungsmail wurde erfolgreich verschickt");
 		} else {
-			echo "<p>Es wurde keine Bestätigungsemail verschickt, weil keine E-Mail angegeben wurde";
+			echo "<p>Es wurde keine Bestätigungsmail verschickt, weil keine E-Mail angegeben wurde";
 		}
 		$stmt->close(); //Speicherplatz freigeben
 		$mysqli->close();
-		echo "<p><strong><a href='../'>Zurück zur Hauptseite</a></strong></p>";
+		echo "<p><strong><a href='/'>Zurück zur Hauptseite</a></strong></p>";
 		
 
 		
@@ -76,6 +80,5 @@ if (isset($_POST["vorname"])) {
 
 
 ?>
-
 </body>
 </html>
