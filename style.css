@@ -37,15 +37,17 @@ html {
 #nebensponsoren img {
 	max-width: 150px;;
 }
-h2 {
-	clear: both;
-}
 input:invalid {
-	border-color: rgba(200, 10, 16, 0.8) !important;
-	-webkit-box-shadow: rgba(0, 0, 0, 0.2) 0 1px 1px inset !important;
-	-moz-box-shadow: rgba(0, 0, 0, 0.2) 0 1px 1px inset;
-	box-shadow: rgba(0, 0, 0, 0.2) 0 1px 1px inset;
- 	border: 1px solid rgba(200, 10, 16, 0.5) !important;
+	-webkit-box-shadow: rgba(255, 0, 0, 0.3) 5px 5px 7px !important;
+	-moz-box-shadow: rgba(255, 0, 0, 0.3) 5px 5px 7px;
+	box-shadow: rgba(255, 0, 0, 0.3) 5px 5px 7px;
+ 	border: 1px solid rgb(255, 0, 0) !important;
+}
+input:valid,textarea {
+	-webkit-box-shadow: rgba(0, 255, 0, 0.3) 2px 2px 7px !important;
+	-moz-box-shadow: rgba(0, 255, 0, 0.3) 2px 2px 7px;
+	box-shadow: rgba(0, 255, 0, 0.3) 2px 2px 7px;
+ 	border: 1px solid rgba(0, 255, 0, 0.3) !important;
 }
 #navigation nav ul {
 	background-color: black;
@@ -63,4 +65,11 @@ input:invalid {
 
 h1,h2,nav {
 	font-family: Claire Hand,Roboto,Arial,Helvetica,sans-serif;;
+}
+h2 {
+	float: left;
+	margin-right: 10px;
+}
+p,small,ul,.clear {
+	clear: both;
 }
