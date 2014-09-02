@@ -42,7 +42,7 @@ if (isset($_POST["vorname"])) {
 			$anmerkung = null;
 		}
 		require_once 'funktionen.php';
-		$inhalt="Es gibt eine neue Sitzplatzreservierung von " . $vorname . " " . $nachname . "!";
+		$inhalt="<p>Es gibt eine neue Sitzplatzreservierung von " . $vorname . " " . $nachname . "!</p>";
 		email("maturaball@kremszeile.at", "Neue Sitzplatzreservierung", $inhalt, ""); //Benachrichtungs-Mail an Zuständige
 		require_once "../intern/verbindungsaufbau.php";
 		if ($stmt = $mysqli->prepare("INSERT INTO reservierungen (vorname,nachname,telefonnummer,email,anzahl,anmerkung,datum) VALUES (?, ?, ?, ?, ?, ?, ?)")) {   // Der SQL-Befehl wird vorbereitet ...
@@ -61,7 +61,7 @@ if (isset($_POST["vorname"])) {
 				. "<i>Das Maturaball-Team</i>";
 			$empfänger=$vorname . " " . $nachname . " <" . $email . ">";
 			
-			email($empfänger, "Reservierung", $inhalt, "Eine Bestätigungsmail wurde erfolgreich verschickt");
+			email($empfänger, "Reservierung", $inhalt, "");
 		} else {
 			echo "<p>Es wurde keine Bestätigungsmail verschickt, weil keine E-Mail angegeben wurde";
 		}
