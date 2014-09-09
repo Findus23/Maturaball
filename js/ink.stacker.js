@@ -7,9 +7,34 @@
 Ink.createModule('Ink.UI.Stacker', 1, ['Ink.UI.Common_1', 'Ink.Dom.Event_1', 'Ink.Dom.Element_1'], function(Common, InkEvent, InkElement) {
     'use strict';
 
-function Stacker(selector, options) {
-    this._init(selector, options);
+function Stacker() {
+    Common.BaseUIComponent.apply(this, arguments);
 }
+
+Stacker._name = 'Stacker_1';
+
+Stacker._optionDefinition = {
+    column: ['String', '.stacker-column'],
+    item: ['String', '.stacker-item'],
+
+    // [3.0.0] review this when we have info about our breakpoints from the CSS
+    customBreakPoints: ['Object', null], // Must be: {xlarge: {max: 9999, min: 1281, cols: 5}, large:{max:1280, min:1001, cols:4} medium:{max:1000, min:801,cols:3}, ...etc..}
+    largeMax: ['Number', Number.MAX_VALUE],
+    largeMin: ['Number', 961],
+    mediumMax: ['Number', 960],
+    mediumMin: ['Number', 651],
+    smallMax: ['Number', 650],
+    smallMin: ['Number', 0],
+
+    largeCols: ['Integer', 3],
+    mediumCols: ['Integer', 2],
+    smallCols: ['Integer', 1],
+
+    isOrdered: ['Boolean', true],
+    onRunCallback: ['Function', null],
+    onResizeCallback: ['Function', null],
+    onAPIReloadCallback: ['Function', null]
+};
 
 Stacker.prototype = {
     /**
@@ -58,64 +83,9 @@ Stacker.prototype = {
      * @param {Function}            [options.onResizeCallback]                      Called when the window resizes.
      * @param {Function}            [options.onAPIReloadCallback]                   Called when the reload function executes.
      *
-     * @example
-     *
-     * Html:
-     *
-     *     <div id="stacker-container">  <!-- Stacker element -->
-     *         <div class="xlarge-33 large-33 medium-50 tiny-100 stacker-column"> <!-- Column element ('.stacker-column' is the default selector) -->
-     *             <div id="a" class="stacker-item">a</div> <!-- Item ('.stacker-item' is the default selector) -->
-     *             <div id="d" class="stacker-item">d</div>
-     *             <div id="g" class="stacker-item">g</div>
-     *         </div>
-     *         <div class="xlarge-33 large-33 medium-50 tiny-100 hide-small stacker-column">
-     *             <div id="b" class="stacker-item">b</div>
-     *             <div id="e" class="stacker-item">e</div>
-     *             <div id="h" class="stacker-item">h</div>
-     *         </div>
-     *         <div class="xlarge-33 large-33 medium-50 tiny-100 hide-medium hide-small stacker-column">
-     *             <div id="c" class="stacker-item">c</div>
-     *             <div id="f" class="stacker-item">f</div>
-     *             <div id="i" class="stacker-item">i</div>
-     *         </div>
-     *     </div>
-     *
-     * Javascript:
-     *
-     *     Ink.requireModules(['Ink.UI.Stacker_1'], function (Stacker) {
-     *         var stacker = new Stacker('#stacker-container');
-     *         // Keep the "stacker" variable around if you want to call addItem and reloadItems
-     *     });
+     * @sample Ink_UI_Stacker_1.html
      **/
-    _init: function(selector, options) {
-        this._rootElm = Common.elsOrSelector(selector, 'Ink.UI.Stacker root element')[0] || null;
-        if(this._rootElm === null) {
-            Ink.warn('Ink.UI.Stacker: No root element');
-        }
-
-        this._options = Common.options({
-            column: ['String', '.stacker-column'],
-            item: ['String', '.stacker-item'],
-
-            // [3.0.0] review this when we have info about our breakpoints from the CSS
-            customBreakPoints: ['Object', null], // Must be: {xlarge: {max: 9999, min: 1281, cols: 5}, large:{max:1280, min:1001, cols:4} medium:{max:1000, min:801,cols:3}, ...etc..}
-            largeMax: ['Number', Number.MAX_VALUE],
-            largeMin: ['Number', 961],
-            mediumMax: ['Number', 960],
-            mediumMin: ['Number', 651],
-            smallMax: ['Number', 650],
-            smallMin: ['Number', 0],
-
-            largeCols: ['Integer', 3],
-            mediumCols: ['Integer', 2],
-            smallCols: ['Integer', 1],
-
-            isOrdered: ['Boolean', true],
-            onRunCallback: ['Function', null],
-            onResizeCallback: ['Function', null],
-            onAPIReloadCallback: ['Function', null]
-        }, options || {}, this._rootElm);  
-
+    _init: function() {
         this._aList = []; 
 
         this._curLayout = 'large';
@@ -133,8 +103,6 @@ Stacker.prototype = {
             }
         }
         this._addEvents();
-
-        Common.registerInstance(this, this._rootElm);
     },
 
     /**
@@ -214,7 +182,7 @@ Stacker.prototype = {
     },
 
     _getPageItemsToList: function() {
-        this._aColumn = Ink.ss(this._options.column, this._rootElm);
+        this._aColumn = Ink.ss(this._options.column, this._element);
         var totalCols = this._aColumn.length;
         var index = 0;
         if(totalCols > 0) {
@@ -276,6 +244,8 @@ Stacker.prototype = {
         }
     }
 };
+
+Common.createUIComponent(Stacker);
 
 return Stacker;
 

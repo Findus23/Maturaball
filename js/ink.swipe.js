@@ -11,7 +11,24 @@ Ink.createModule('Ink.UI.Swipe', '1', ['Ink.Dom.Event_1', 'Ink.Dom.Element_1', '
      *
      * Supports filtering swipes be any combination of the criteria supported in the options.
      *
-     * @class Ink.UI.Swipe_1
+     * -----
+     *
+     * Arguments received by the callbacks
+     * -----------------------------------
+     *
+     * The `onStart`, `onMove`, and `onEnd` options receive as argument an object containing:
+     *
+     *   - `event`: the DOMEvent object
+     *   - `element`: the target element
+     *   - `Instance`: the `Ink.UI.Swipe_1` instance
+     *   - `position`: `Array` with `[x, y]` coordinates of current position
+     *   - `dt`: Time passed between now and the first event (onMove only)
+     *   - `gesture`: an Array containing [x,y] coordinates of every touchmove event received (only if options.storeGesture is enabled) (onEnd only)
+     *   - `time`: an Array containing all the `dt` values for every touchmove event (onEnd only)
+     *   - `overallMovement`: X and Y distance traveled by the touch movement (`[x, y]`) (onEnd only)
+     *   - `overallTime`: total time passed (onEnd only)
+     *
+     * @class Ink.UI.Swipe
      * @constructor
      * @param {String|DOMElement}   el                      Element or Selector
      * @param {Object}              options                 Options Object
@@ -25,64 +42,43 @@ Ink.createModule('Ink.UI.Swipe', '1', ['Ink.Dom.Event_1', 'Ink.Dom.Element_1', '
      * @param {String}              [options.axis]          If either 'x' or 'y' is passed, only swipes where the dominant axis is the given one trigger the callback
      * @param {String}              [options.storeGesture]  If to store gesture information and provide it to the callback. Defaults to true.
      * @param {String}              [options.stopEvents]    Flag to stop (default and propagation) of the received events. Defaults to true.
-     * 
-     * -----
      *
-     * Arguments received by the callbacks
-     * -----------------------------------
-     *
-     * `onStart`, `onMove`, and `onEnd` receive as argument an object containing:
-     *
-     *   - `event`: the DOMEvent object
-     *   - `element`: the target element
-     *   - `Instance`: the `Ink.UI.Swipe_1` instance
-     *   - `position`: `Array` with `[x, y]` coordinates of current position
-     *   - `dt`: Time passed between now and the first event (onMove only)
-     *   - `gesture`: an Array containing [x,y] coordinates of every touchmove event received (storeGesture only) (onEnd only)
-     *   - `time`: an Array containing all the `dt` values for every touchmove event (onEnd only)
-     *   - `overallMovement`: X and Y distance traveled by the touch movement (`[x, y]`) (onEnd only)
-     *   - `overallTime`: total time passed (onEnd only)
      *
      * @sample Ink_UI_Swipe_1.html
      */
-    function Swipe(el, options) {
-        el = Common.elOrSelector(el, 'Swipe target');
-
-        this._options = Ink.extendObj({
-            onEnd:          undefined,
-            onStart:        undefined,
-            onMove:         undefined,
-            minDist:        undefined,      // in pixels
-            maxDist:        undefined,
-            minDuration:    undefined,      // in seconds
-            maxDuration:    undefined,
-            axis:           undefined,       // x | y
-            storeGesture:   false,
-            stopEvents:     true
-        }, InkElement.data(el), options || {});
-
-        if (typeof options === 'function') {
-            this._options.onEnd = options;
+    function Swipe() {
+        if (typeof arguments[1] === 'function') {
+            arguments[1] = { onEnd: arguments[1] };
         }
 
-        this._handlers = {
-            down: Ink.bindEvent(this._onDown, this),
-            move: Ink.bindEvent(this._onMove, this),
-            up:   Ink.bindEvent(this._onUp, this)
-        };
-
-        this._element = el;
-
-        this._init();
+        Common.BaseUIComponent.apply(this, arguments);
     }
 
+    Swipe._name = 'Swipe_1';
+
+    Swipe._optionDefinition = {
+        onEnd:          ['Function', undefined],
+        onStart:        ['Function', undefined],
+        onMove:         ['Function', undefined],
+        minDist:        ['Number',   undefined],      // in pixels
+        maxDist:        ['Number',   undefined],
+        minDuration:    ['Number',   undefined],      // in seconds
+        maxDuration:    ['Number',   undefined],
+        axis:           ['String',   undefined],       // x | y
+        storeGesture:   ['Boolean',  false],
+        stopEvents:     ['Boolean',  true]
+    };
+
     Swipe.prototype = {
-
-        version: '0.1',
-
         _supported: ('ontouchstart' in document.documentElement),
 
         _init: function() {
+            this._handlers = {
+                down: Ink.bindEvent(this._onDown, this),
+                move: Ink.bindEvent(this._onMove, this),
+                up:   Ink.bindEvent(this._onUp, this)
+            };
+
             var db = document.body;
             InkEvent.observe(db, 'touchstart', this._handlers.down);
             if (this._options.storeGesture || this._options.onMove) {
@@ -90,8 +86,6 @@ Ink.createModule('Ink.UI.Swipe', '1', ['Ink.Dom.Event_1', 'Ink.Dom.Element_1', '
             }
             InkEvent.observe(db, 'touchend', this._handlers.up);
             this._isOn = false;
-
-            Common.registerInstance(this, this._element);
         },
 
         _isMeOrParent: function(el, parentEl) {
@@ -207,6 +201,8 @@ Ink.createModule('Ink.UI.Swipe', '1', ['Ink.Dom.Event_1', 'Ink.Dom.Element_1', '
             }
         }
     };
+
+    Common.createUIComponent(Swipe);
 
     return Swipe;
 });

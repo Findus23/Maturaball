@@ -8,8 +8,6 @@ Ink.createModule('Ink.UI.Common', '1', ['Ink.Dom.Element_1', 'Ink.Net.Ajax_1','I
 
     'use strict';
 
-    var instances = {};
-    var lastIdNum = 0;
     var nothing = {} /* a marker, for reference comparison. */;
 
     var keys = Object.keys || function (obj) {
@@ -18,6 +16,24 @@ Ink.createModule('Ink.UI.Common', '1', ['Ink.Dom.Element_1', 'Ink.Net.Ajax_1','I
             ret.push(k);
         }
         return ret;
+    };
+
+    var es6WeakMapSupport = 'WeakMap' in window;
+    var instances = es6WeakMapSupport ? new WeakMap() : null;
+
+    var domRegistry = {
+        get: function get(el) {
+            return es6WeakMapSupport ?
+                instances.get(el) :
+                el.__InkInstances;
+        },
+        set: function set(el, thing) {
+            if (es6WeakMapSupport) {
+                instances.set(el, thing);
+            } else {
+                el.__InkInstances = thing;
+            }
+        }
     };
 
     /**
@@ -56,9 +72,7 @@ Ink.createModule('Ink.UI.Common', '1', ['Ink.Dom.Element_1', 'Ink.Net.Ajax_1','I
          *         // It is NOT a DOM Element.
          *     }
          */
-        isDOMElement: function(o) {
-            return o && typeof o === 'object' && 'nodeType' in o && o.nodeType === 1;
-        },
+        isDOMElement: InkElement.isDOMElement,
 
         /**
          * Checks if an item is a valid integer.
@@ -327,7 +341,8 @@ Ink.createModule('Ink.UI.Common', '1', ['Ink.Dom.Element_1', 'Ink.Net.Ajax_1','I
                 },
                 'boolean': function (val) {
                     return typeof val === 'boolean';
-                }
+                },
+                object: function () { return true; }
             };
             types['float'] = types.number;
             return types;
@@ -616,19 +631,41 @@ Ink.createModule('Ink.UI.Common', '1', ['Ink.Dom.Element_1', 'Ink.Net.Ajax_1','I
 
             var nameWithoutVersion = getName(newInstance);
 
+            if (!nameWithoutVersion) { return; }
+
             for (var i = 0, len = instances.length; i < len; i++) {
                 if (nameWithoutVersion === getName(instances[i])) {
+                    // Yes, I am using + to concatenate and , to split
+                    // arguments.
+                    //
+                    // Elements can't be concatenated with strings, but if
+                    // they are passed in an argument, modern debuggers will
+                    // pretty-print them and make it easy to find them in the
+                    // element inspector.
+                    //
+                    // On the other hand, if strings are passed as different
+                    // arguments, they get pretty printed. And the pretty
+                    // print of a string has quotes around it.
+                    //
+                    // If some day people find out that strings are not
+                    // just text and they start preserving contextual
+                    // information, then by all means change this to a
+                    // regular concatenation.
+                    //
+                    // But they won't. So don't change this.
                     Ink.warn('Creating more than one ' + nameWithoutVersion + '.',
-                            '(Was creating a ' + nameWithoutVersion + ' on:', elm, '.' +
-                            'Existing element was: ', instances[i]._element);
+                            '(Was creating a ' + nameWithoutVersion + ' on:', elm, ').');
+                    return false;
                 }
             }
 
             function getName(thing) {
-                return ((thing.constructor && (thing.constructor._name || thing.constructor.name)) ||
+                return ((thing.constructor && (thing.constructor._name)) ||
                     thing._name ||
                     '').replace(/_.*?$/, '');
             }
+
+            return true;
         },
 
         /**
@@ -640,17 +677,25 @@ Ink.createModule('Ink.UI.Common', '1', ['Ink.Dom.Element_1', 'Ink.Net.Ajax_1','I
          * @param  {DOMElement} el                  DOM Element to associate with the object.
          */
         registerInstance: function(inst, el) {
-            if (!inst || inst._instanceId) { return; }
+            if (!inst) { return; }
 
-            if (!this.isDOMElement(el)) { throw new TypeError('Ink.UI.Common.registerInstance: The element passed in is not a DOM element!'); }
+            if (!Common.isDOMElement(el)) { throw new TypeError('Ink.UI.Common.registerInstance: The element passed in is not a DOM element!'); }
 
-            Common._warnDoubleInstantiation(el, inst);
-            var id = 'instance' + (++lastIdNum);
-            instances[id] = inst;
-            inst._instanceId = id;
-            var dataInst = el.getAttribute('data-instance');
-            dataInst = (dataInst !== null) ? [dataInst, id].join(' ') : id;
-            el.setAttribute('data-instance', dataInst);
+            // [todo] this belongs in the BaseUIComponent's initialization
+            if (Common._warnDoubleInstantiation(el, inst) === false) {
+                return false;
+            }
+
+            var instances = domRegistry.get(el);
+
+            if (!instances) {
+                instances = [];
+                domRegistry.set(el, instances);
+            }
+
+            instances.push(inst);
+
+            return true;
         },
 
         /**
@@ -660,8 +705,14 @@ Ink.createModule('Ink.UI.Common', '1', ['Ink.Dom.Element_1', 'Ink.Net.Ajax_1','I
          * @static
          * @param  {String}     id       Id of the instance to be destroyed.
          */
-        unregisterInstance: function(id) {
-            delete instances[id];
+        unregisterInstance: function(inst) {
+            if (!inst || !inst._element) { return; }
+            var instances = domRegistry.get(inst._element);
+            for (var i = 0, len = instances.length; i < len; i++) {
+                if (instances[i] === inst) {
+                    instances.splice(i, 1);
+                }
+            }
         },
 
         /**
@@ -669,33 +720,28 @@ Ink.createModule('Ink.UI.Common', '1', ['Ink.Dom.Element_1', 'Ink.Net.Ajax_1','I
          *
          * @method getInstance
          * @static
-         * @param  {String|DOMElement}      instanceIdOrElement      Instance's id or DOM Element from which we want the instances.
-         * @return  {Object|Array}       Returns an instance or a collection of instances.
+         * @param  {String|DOMElement}      el      DOM Element from which we want the instances.
+         * @return  {Object|Array}                  Returns an instance or a collection of instances.
          */
-        getInstance: function(instanceIdOrElement) {
-            var ids;
-            instanceIdOrElement = Common.elOrSelector(instanceIdOrElement);
-            if (instanceIdOrElement) {
-                ids = instanceIdOrElement.getAttribute('data-instance');
-                if (ids === null) { return null; }
-            }
-            else {
-                ids = instanceIdOrElement;
+        getInstance: function(el, UIComponent) {
+            el = Common.elOrSelector(el);
+            var instances = domRegistry.get(el);
+
+            if (!instances) {
+                instances = [];
             }
 
-            ids = ids.split(/\s+/g);
-            var inst, id, i, l = ids.length;
-
-            var res = [];
-            for (i = 0; i < l; ++i) {
-                id = ids[i];
-                if (!id) { throw new Error('Element is not a JS instance!'); }
-                inst = instances[id];
-                if (!inst) { throw new Error('Instance "' + id + '" not found!'); }
-                res.push(inst);
+            if (typeof UIComponent !== 'function') {
+                return instances;
             }
 
-            return res;
+            for (var i = 0, len = instances.length; i < len; i++) {
+                if (instances[i] instanceof UIComponent) {
+                    return instances[i];
+                }
+            }
+
+            return null;
         },
 
         /**
@@ -707,9 +753,7 @@ Ink.createModule('Ink.UI.Common', '1', ['Ink.Dom.Element_1', 'Ink.Net.Ajax_1','I
          * @return  {Object|Array}               Returns an instance or a collection of instances.
          */
         getInstanceFromSelector: function(selector) {
-            var el = Selector.select(selector)[0];
-            if (!el) { throw new Error('Element not found!'); }
-            return this.getInstance(el);
+            return Common.getInstance(Common.elOrSelector(selector));
         },
 
         /**
@@ -754,10 +798,265 @@ Ink.createModule('Ink.UI.Common', '1', ['Ink.Dom.Element_1', 'Ink.Net.Ajax_1','I
          * @static
          */
         destroyComponent: function() {
-            Common.unregisterInstance(this._instanceId);
+            Common.unregisterInstance(this);
             this._element.parentNode.removeChild(this._element);
         }
 
+    };
+
+
+
+
+    /**
+     * Ink UI Base Class
+     **/
+
+    function warnStub() {
+        /* jshint validthis: true */
+        if (!this || this === window || typeof this.constructor !== 'function') { return; }
+        Ink.warn('You called a method on an incorrectly instantiated ' + this.constructor._name + ' component. Check the warnings above to see what went wrong.');
+    }
+
+    function stub(prototype, obj) {
+        for (var k in prototype) if (prototype.hasOwnProperty(k)) {
+            if (k === 'constructor') { continue; }
+            if (typeof obj[k] === 'function') {
+                obj[k] = warnStub;
+            }
+        }
+    }
+
+    /**
+     * Ink UI Base Class
+     *
+     * You don't use this class directly, or inherit from it directly.
+     *
+     * See createUIComponent() (in this module) for how to create a UI component and inherit from this. It's not plain old JS inheritance, for several reasons.
+     *
+     * @class Ink.UI.Common.BaseUIComponent
+     * @constructor
+     *
+     * @param element
+     * @param options
+     **/
+    function BaseUIComponent(element, options) {
+        var constructor = this.constructor;
+        var _name = constructor._name;
+
+        if (!this || this === window) {
+            throw new Error('Use "new InkComponent()" instead of "InkComponent()"');
+        }
+
+        if (this && !(this instanceof BaseUIComponent)) {
+            throw new Error('You forgot to call Ink.UI.Common.createUIComponent() on this module!');
+        }
+
+        if (!element && !constructor._componentOptions.elementIsOptional) {
+            Ink.error(new Error(_name + ': You need to pass an element or a selector as the first argument to "new ' + _name + '()"'));
+            return;
+        } else {
+            this._element = Common.elsOrSelector(element,
+                _name + ': An element with the selector "' + element + '" was not found!')[0];
+        }
+
+        if (!this._element && !constructor._componentOptions.elementIsOptional) {
+            isValidInstance = false;
+            Ink.error(new Error(element + ' does not match an element on the page. You need to pass a valid selector to "new ' + _name + '".'));
+        }
+
+        // TODO Change Common.options's signature? the below looks better, more manageable
+        // var options = Common.options({
+        //     element: this._element,
+        //     modName: constructor._name,
+        //     options: constructor._optionDefinition,
+        //     defaults: constructor._globalDefaults
+        // });
+
+        this._options = Common.options(_name, constructor._optionDefinition, options, this._element);
+
+        var isValidInstance = BaseUIComponent._validateInstance(this) === true;
+
+        if (isValidInstance && typeof this._init === 'function') {
+            try {
+                this._init.apply(this, arguments);
+            } catch(e) {
+                isValidInstance = false;
+                Ink.error(e);
+            }
+        }
+
+        if (!isValidInstance) {
+            BaseUIComponent._stubInstance(this, constructor, _name);
+        } else if (this._element) {
+            Common.registerInstance(this, this._element);
+        }
+    }
+
+    /**
+     * Calls the `instance`'s _validate() method so it can validate itself.
+     *
+     * Returns false if the method exists, was called, but no Error was returned or thrown.
+     *
+     * @method _validateInstance
+     * @private
+     */
+    BaseUIComponent._validateInstance = function (instance) {
+        var err;
+
+        if (typeof instance._validate !== 'function') { return true; }
+
+        try {
+            err = instance._validate();
+        } catch (e) {
+            err = e;
+        }
+
+        if (err instanceof Error) {
+            instance._validationError = err;
+            return false;
+        }
+
+        return true;
+    };
+
+
+    /**
+     * Replaces every method in the instance with stub functions which just call Ink.warn().
+     *
+     * This avoids breaking the page when there are errors.
+     *
+     * @method _stubInstance
+     * @param instance
+     * @param constructor
+     * @param name
+     * @private
+     */
+    BaseUIComponent._stubInstance = function (instance, constructor, name) {
+        stub(constructor.prototype, instance);
+        stub(BaseUIComponent.prototype, instance);
+        Ink.warn(name + ' was not correctly created. ' + (instance._validationError || ''));
+    };
+
+    // TODO BaseUIComponent.setGlobalOptions = function () {}
+    // TODO BaseUIComponent.createMany = function (selector) {}
+    BaseUIComponent.getInstance = function (elOrSelector) {
+        elOrSelector = Common.elOrSelector(elOrSelector);
+        return Common.getInstance(elOrSelector, this /* get instance by constructor */);
+    };
+
+    Ink.extendObj(BaseUIComponent.prototype, {
+        /**
+         * Get an UI component's option's value.
+         *
+         * @method getOption
+         * @param name
+         *
+         * @return The option value, or undefined if nothing is found.
+         *
+         * @example
+         *
+         * var myUIComponent = new Modal('#element', { trigger: '#trigger' }); // or anything else inheriting BaseUIComponent
+         * myUIComponent.getOption('trigger');  // -> The trigger element (not the selector string, mind you)
+         *
+         **/
+        getOption: function (name) {
+            if (this.constructor && !(name in this.constructor._optionDefinition)) {
+                Ink.error('"' + name + '" is not an option for ' + this.constructor._name);
+                return undefined;
+            }
+
+            return this._options[name];
+        },
+
+        /**
+         * Sets an option's value
+         *
+         * @method getOption
+         * @param name
+         * @param value
+         *
+         * @example
+         *
+         * var myUIComponent = new Modal(...);
+         * myUIComponent.setOption('trigger', '#some-element');
+         **/
+        setOption: function (name, value) {
+            if (this.constructor && !(name in this.constructor._optionDefinition)) {
+                Ink.error('"' + name + ' is not an option for ' + this.constructor._name);
+                return;
+            }
+
+            this._options[name] = value;
+        },
+
+        /**
+         * Get the element associated with an UI component (IE the one you used in the constructor)
+         *
+         * @method getElement
+         * @return {Element} The component's element.
+         *
+         * @example
+         * var myUIComponent = new Modal('#element'); // or anything else inheriting BaseUIComponent
+         * myUIComponent.getElement();  // -> The '#element' (not the selector string, mind you).
+         *
+         **/
+        getElement: function () {
+            return this._element;
+        }
+    });
+
+    Common.BaseUIComponent = BaseUIComponent;
+
+    /**
+     * @method createUIComponent
+     * @param theConstructor UI component constructor. It should have an _init function in its prototype, an _optionDefinition object, and a _name property indicating its name.
+     * @param options
+     * @param [options.elementIsOptional=false] Whether the element argument is optional (For example, when the component might work on existing markup or create its own).
+     **/
+    Common.createUIComponent = function createUIComponent(theConstructor, options) {
+        theConstructor._componentOptions = options || {};
+
+        function assert(test, msg) {
+            if (!test) {
+                throw new Error('Ink.UI_1.createUIComponent: ' + msg);
+            }
+        }
+
+        function assertProp(prop, propType, message) {
+            var propVal = theConstructor[prop];
+            // Check that the property was passed
+            assert(typeof propVal !== 'undefined',
+                theConstructor + ' doesn\'t have a "' + prop + '" property. ' + message);
+            // Check that its type is correct
+            assert(propType && typeof propVal === propType,
+                'typeof ' + theConstructor + '.' + prop + ' is not "' + propType + '". ' + message);
+        }
+
+        assert(typeof theConstructor === 'function',
+            'constructor argument is not a function!');
+
+        assertProp('_name', 'string', 'This property is used for error ' +
+            'messages. Set it to the full module path and version (Ink.My.Module_1).');
+        assertProp('_optionDefinition', 'object', 'This property contains the ' +
+            'option names, types and defaults. See Ink.UI.Common.options() for reference.');
+
+        // Extend the instance methods and props
+        var _oldProto = theConstructor.prototype;
+
+        if (typeof Object.create === 'function') {
+            theConstructor.prototype = Object.create(BaseUIComponent.prototype);
+        } else {
+            theConstructor.prototype = (function hideF() {
+                function F() {}
+                F.prototype = BaseUIComponent.prototype;
+                return new F();
+            }());
+        }
+
+        Ink.extendObj(theConstructor.prototype, _oldProto);
+        theConstructor.prototype.constructor = theConstructor;
+        // Extend static methods
+        Ink.extendObj(theConstructor, BaseUIComponent);
     };
 
     return Common;
