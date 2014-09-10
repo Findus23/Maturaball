@@ -73,3 +73,13 @@ h2 {
 p,small,ul,.clear {
 	clear: both;
 }
+@media print {
+	html {
+		background: none;
+		margin-left: auto;
+		margin-right: auto;
+	}
+	#sidebar-links,.schullogo,iframe {
+		display: none;
+	}
+}
