@@ -218,9 +218,6 @@ Ink.createModule('Ink.UI.Carousel', '1',
         axis:           ['String', 'x'],
         initialPage:    ['Integer', 0],
         spaceAfterLastSlide: ['Boolean', true],
-        hideLast:       ['Boolean', false],
-        // [3.1.0] Deprecate "center". It is only needed when things are of unknown widths.
-        center:         ['Boolean', false],
         keyboardSupport:['Boolean', false],
         pagination:     ['String', null],
         onChange:       ['Function', null],
@@ -242,6 +239,7 @@ Ink.createModule('Ink.UI.Carousel', '1',
             this._isY = (this._options.axis === 'y');
 
             var ulEl = Ink.s('ul.stage', this._element);
+            ulEl.style.width = '100%';
             this._ulEl = ulEl;
 
             InkElement.removeTextNodeChildren(ulEl);
@@ -265,7 +263,6 @@ Ink.createModule('Ink.UI.Carousel', '1',
 
             this._setUpPagination();
             this._setUpAutoAdvance();
-            this._setUpHider();
 
             this._options.onInit.call(this, this);
         },
@@ -304,14 +301,12 @@ Ink.createModule('Ink.UI.Carousel', '1',
             this._numPages = numPages;
             this._deltaLength = this._slidesPerPage * this._elLength;
             
-            this._center();
-            this._updateHider();
             this._IE7();
 
             if (this._pagination && numPagesChanged) {
                 this._pagination.setSize(this._numPages);
             }
-            this.setPage(limitRange(this.getPage(), 0, this._numPages));
+            this.setPage(limitRange(this.getPage(), 0, this._numPages - 1));
         },
 
         _setUpPagination: function () {
@@ -345,49 +340,6 @@ Ink.createModule('Ink.UI.Carousel', '1',
             }, this._options.autoAdvance);
         },
 
-        _setUpHider: function () {
-            if (this._options.hideLast) {
-                var hiderEl = InkElement.create('div', {
-                    className: 'hider',
-                    insertBottom: this._element
-                });
-                hiderEl.style.position = 'absolute';
-                hiderEl.style[ this._isY ? 'left' : 'top' ] = '0';  // fix to top..
-                hiderEl.style[ this._isY ? 'right' : 'bottom' ] = '0';  // and bottom...
-                hiderEl.style[ this._isY ? 'bottom' : 'right' ] = '0';  // and move to the end.
-                this._hiderEl = hiderEl;
-            }
-        },
-
-        // [3.1.0] Deprecate this already
-        _center: function() {
-            if (!this._options.center) { return; }
-            var gap = Math.floor( (this._ctnLength - (this._elLength * this._slidesPerPage) ) / 2 );
-
-            var pad;
-            if (this._isY) {
-                pad = [gap, 'px 0'];
-            } else {
-                pad = ['0 ', gap, 'px'];
-            }
-
-            this._ulEl.style.padding = pad.join('');
-        },
-
-        // [3.1.0] Deprecate this already
-        _updateHider: function() {
-            if (!this._hiderEl) { return; }
-            if (this.getPage() === 0) {
-                var gap = Math.floor( this._ctnLength - (this._elLength * this._slidesPerPage) );
-                if (this._options.center) {
-                    gap /= 2;
-                }
-                this._hiderEl.style[ this._isY ? 'height' : 'width' ] = gap + 'px';
-            } else {
-                this._hiderEl.style[ this._isY ? 'height' : 'width' ] = '0px';
-            }
-        },
-        
         /**
          * Refits elements for IE7 because it doesn't support inline-block.
          *
@@ -432,14 +384,17 @@ Ink.createModule('Ink.UI.Carousel', '1',
             var pointerX = InkEvent.pointerX(event);
             var pointerY = InkEvent.pointerY(event);
 
-            var deltaY = Math.abs(pointerY - this._swipeData.y);
-            var deltaX = Math.abs(pointerX - this._swipeData.x);
+            var deltaY = this._swipeData.y - pointerY;
+            var deltaX = this._swipeData.x - pointerX;
 
             if (this._touchMoveIsFirstTouchMove) {
+                var aDeltaY = Math.abs(deltaY);
+                var aDeltaX = Math.abs(deltaX);
+
                 this._touchMoveIsFirstTouchMove = undefined;
                 this._scrolling = this._isY ?
-                    deltaX > deltaY :
-                    deltaY > deltaX ;
+                    aDeltaX > aDeltaY :
+                    aDeltaY > aDeltaX ;
 
                 if (!this._scrolling) {
                     this._onAnimationFrame();
@@ -449,6 +404,7 @@ Ink.createModule('Ink.UI.Carousel', '1',
             if (!this._scrolling && this._swipeData) {
                 InkEvent.stopDefault(event);
 
+                this._swipeData.pointerDelta = this._isY ? deltaY : deltaX;
                 this._swipeData.pointerPos = this._isY ? pointerY : pointerX;
             }
         },
@@ -477,17 +433,16 @@ Ink.createModule('Ink.UI.Carousel', '1',
             if (this._swipeData && this._swipeData.pointerPos && !this._scrolling && !this._touchMoveIsFirstTouchMove) {
                 var snapToNext = 0.1;  // swipe 10% of the way to change page
 
-                var relProgress = this._swipeData.firstUlPos -
-                    this._ulEl.getBoundingClientRect()[this._isY ? 'top' : 'left'];
+                var pointerDelta = this._swipeData.pointerDelta;
 
                 var curPage = this.getPage();
 
                 // How many pages were advanced? May be fractional.
-                var progressInPages = relProgress / this._elLength / this._slidesPerPage;
+                var progressInPages = pointerDelta / this._elLength / this._slidesPerPage;
 
                 // Have we advanced enough to change page?
                 if (Math.abs(progressInPages) > snapToNext) {
-                    curPage += Math[ relProgress < 0 ? 'floor' : 'ceil' ](progressInPages);
+                    curPage += Math[ pointerDelta < 0 ? 'floor' : 'ceil' ](progressInPages);
                 }
 
                 // If something used to calculate progressInPages was zero, we get NaN here.
@@ -535,6 +490,8 @@ Ink.createModule('Ink.UI.Carousel', '1',
             }
             page = limitRange(page, 0, this._numPages - 1);
 
+            if (page === this._currentPage) { return; }
+
             if (this._pagination) {
                 this._pagination.setCurrent(page);  // _setPage is called by pagination because it listens to its Change event.
             } else {
@@ -553,16 +510,16 @@ Ink.createModule('Ink.UI.Carousel', '1',
                 }
             }
 
+            if (page === this._currentPage) { return; }
+
             this._ulEl.style[ this._isY ? 'top' : 'left'] =
-                ['-', _lengthToGo, 'px'].join('');
+                ['-', (_lengthToGo / this._ctnLength) * 100, '%'].join('');
 
             if (this._options.onChange) {
                 this._options.onChange.call(this, page);
             }
 
             this._currentPage = page;
-
-            this._updateHider();
         },
 
         /**
@@ -719,18 +676,19 @@ Ink.createModule('Ink.UI.Common', '1', ['Ink.Dom.Element_1', 'Ink.Net.Ajax_1','I
 
     var es6WeakMapSupport = 'WeakMap' in window;
     var instances = es6WeakMapSupport ? new WeakMap() : null;
-
+    // Old Registry
+    var _reg = [];
     var domRegistry = {
         get: function get(el) {
             return es6WeakMapSupport ?
                 instances.get(el) :
-                el.__InkInstances;
+                _reg[el.getAttribute('__InkInstance')];
         },
         set: function set(el, thing) {
             if (es6WeakMapSupport) {
                 instances.set(el, thing);
             } else {
-                el.__InkInstances = thing;
+                el.setAttribute('__InkInstance', _reg.push(thing) - 1);
             }
         }
     };
@@ -1352,7 +1310,7 @@ Ink.createModule('Ink.UI.Common', '1', ['Ink.Dom.Element_1', 'Ink.Net.Ajax_1','I
                     // regular concatenation.
                     //
                     // But they won't. So don't change this.
-                    Ink.warn('Creating more than one ' + nameWithoutVersion + '.',
+                    Ink.warn('Creating more than one ' + nameWithoutVersion + 'for the same element.',
                             '(Was creating a ' + nameWithoutVersion + ' on:', elm, ').');
                     return false;
                 }
@@ -1463,6 +1421,7 @@ Ink.createModule('Ink.UI.Common', '1', ['Ink.Dom.Element_1', 'Ink.Net.Ajax_1','I
          * @return  {Array}     Collection of instance ids
          */
         getInstanceIds: function() {
+            if( _reg.length > 0 ) return _reg;
             var res = [];
             for (var id in instances) {
                 if (instances.hasOwnProperty(id)) {
@@ -1480,6 +1439,7 @@ Ink.createModule('Ink.UI.Common', '1', ['Ink.Dom.Element_1', 'Ink.Net.Ajax_1','I
          * @return  {Array}     Collection of existing instances.
          */
         getInstances: function() {
+            if( _reg.length > 0 ) return _reg;
             var res = [];
             for (var id in instances) {
                 if (instances.hasOwnProperty(id)) {
@@ -2941,6 +2901,11 @@ Ink.createModule('Ink.UI.DatePicker', '1', ['Ink.UI.Common_1','Ink.Dom.Event_1',
                 date = advancer(date);
             }
 
+            var daysInThisMonth = this._daysInMonth(date._year, date._month + 1);
+            if (date._day > daysInThisMonth) {
+                date._day = daysInThisMonth;
+            }
+
             date = this._fitDateToRange(date);
 
             return this['_acceptable' + atomName](date) ? date : null;
@@ -3247,8 +3212,8 @@ Ink.createModule("Ink.UI.Draggable","1",["Ink.Dom.Element_1", "Ink.Dom.Event_1",
      * @param {Number}              [options.bottom]            Limits to constrain draggable movement.
      * @param {Number}              [options.left]              Limits to constrain draggable movement.
      * @param {String|DOMElement}   [options.handle]            If specified, this element or CSS ID will be used as a handle for dragging.
-     * @param {Boolean}             [options.revert]            Flag to revert the draggable to the original position when dragging stops.
-     * @param {String}              [options.cursor]            Cursor type (CSS `cursor` value) used when the mouse is over the draggable object.
+     * @param {Boolean}             [options.revert=false]            Flag to revert the draggable to the original position when dragging stops.
+     * @param {String}              [options.cursor='move']            Cursor type (CSS `cursor` value) used when the mouse is over the draggable object.
      * @param {Number}              [options.zIndex]            Z-index applied to the draggable element while dragged.
      * @param {Number}              [options.fps]               If set, throttles the drag effect to this number of frames per second.
      * @param {DOMElement}          [options.droppableProxy]    If set, a shallow copy of this element will be moved around with transparent background.
@@ -3471,7 +3436,7 @@ Ink.createModule("Ink.UI.Draggable","1",["Ink.Dom.Element_1", "Ink.Dom.Event_1",
                     fs.position         = 'fixed';
                     fs.left             = '0';
                     fs.top              = '0';
-                    fs.zIndex           = this._options.zindex + 1;
+                    fs.zIndex           = this._options.zIndex + 1;
                     fs.backgroundColor  = '#FF0000';
                     Css.setOpacity(this.proxy, 0);
 
@@ -3488,7 +3453,7 @@ Ink.createModule("Ink.UI.Draggable","1",["Ink.Dom.Element_1", "Ink.Dom.Event_1",
                 }
 
                 this._element.style.position = 'absolute';
-                this._element.style.zIndex = this._options.zindex;
+                this._element.style.zIndex = this._options.zIndex;
                 this._element.parentNode.insertBefore(this.placeholder, this._element);
 
                 this._onDrag(e);
@@ -3673,13 +3638,42 @@ Ink.createModule('Ink.UI.Drawer', '1', ['Ink.UI.Common_1', 'Ink.Dom.Loaded_1', '
     'use strict';
 
     function elNotFound(el) {
-        Ink.warn( 'Ink.UI.Drawer_1: Could not find the "' +
-            el + '" element on this page. Please make sure it exists.' );
+        return 'Ink.UI.Drawer_1: Could not find the "' +
+            el + '" element on this page. Please make sure it exists.';
     }
 
-    function Drawer(options) {
+    // Detect the transitionEnd event name, and the style property name for "transition", because prefixes.
+    // Source: https://github.com/EvandroLG/transitionEnd/blob/master/src/transition-end.js
+    var transitionSupport = (function (div) {
+        var transitions = {
+            'WebkitTransitionProperty': 'webkitTransitionEnd',
+            'transitionProperty': 'transitionend'
+        };
+
+        for (var t in transitions) {
+            if (transitions.hasOwnProperty(t)) {
+                if (div.style[t] !== undefined) {
+                    return { styleProp: t, eventName: transitions[t] };
+                }
+            }
+        }
+
+        return false;
+    }(document.createElement('div')));
+
+    // Drawer takes two arguments for consistency with the rest of UI components, but only uses "options" for now.
+    // In the future it might use the "el" argument. Until that works, we're ignoring the argument but asking for
+    // people to kindly call new Drawer() with document.body which should then seamlessly be forward-compatible.
+    function Drawer(el, options) {
+        if (!Common.isDOMElement(el)) {
+            // One-argument form, for backwards compat.
+            options = el;
+        }
         Common.BaseUIComponent.apply(this, [document.body, options]);
     }
+
+    // Expose for testing
+    Drawer.transitionSupport = transitionSupport;
 
     Drawer._name = 'Drawer_1';
 
@@ -3704,15 +3698,16 @@ Ink.createModule('Ink.UI.Drawer', '1', ['Ink.UI.Common_1', 'Ink.Dom.Loaded_1', '
          * @constructor
          *
          * @param {Object}      [options]                       Configuration options.
-         * @xparam {String}     [options.parentSelector]        The class you are using in your wrapper (in the example below, it's the `body` tag.)
-         * @xparam {String}     [options.leftDrawer]            Selector for the left drawer element. This element is placed outside the screen and shown when you click the `leftTrigger` element.
-         * @xparam {String}     [options.leftTrigger]           Selector for the left drawer trigger(s). When you click this trigger, the `leftDrawer` is shown.
-         * @xparam {String}     [options.rightDrawer]           Right drawer selector. (see `options.leftDrawer`)
-         * @xparam {String}     [options.rightTrigger]          Right trigger selector (see `options.leftTrigger`)
-         * @xparam {String}     [options.contentDrawer]         Selector for the content drawer.
-         * @param {Boolean}     [options.closeOnContentClick]   Flag to close the drawer when someone clicks on the `.contentDrawer`
-         * @param {String}      [options.mode]                  This can be 'push' or 'over'.
-         * @param {String}      [options.sides]                 Can be 'left', 'right', or 'both'. Controls what sides have a drawer.
+         * @xparam {String}     [options.parentSelector='.ink-drawer']       The class you are using in your wrapper (in the example below, it's the `body` tag.)
+         * @xparam {String}     [options.leftDrawer='.left-drawer']          Selector for the left drawer element. This element is placed outside the screen and shown when you click the `leftTrigger` element.
+         * @xparam {String}     [options.leftTrigger='.left-drawer-trigger'] Selector for the left drawer trigger(s). When you click this trigger, the `leftDrawer` is shown.
+         * @xparam {String}     [options.rightDrawer='.right-drawer']        Right drawer selector. (see `options.leftDrawer`)
+         * @xparam {String}     [options.rightTrigger='.right-drawer-trigger'] Right trigger selector (see `options.leftTrigger`)
+         * @xparam {String}     [options.contentDrawer='.content-drawer']    Selector for the content drawer.
+         * @param {Boolean}     [options.closeOnContentClick=true]           Flag to close the drawer when someone clicks on the `.contentDrawer`
+         * @param {Boolean}     [options.closeOnLinkClick=true]              Flag to close the drawer when someone clicks on a link in the (left or right) drawer.
+         * @param {String}      [options.mode='push']                        This can be 'push' or 'over'.
+         * @param {String}      [options.sides='both']                       Can be 'left', 'right', or 'both'. Controls what sides have a drawer.
          *
          * @example
          * <body class="ink-drawer">
@@ -3737,7 +3732,7 @@ Ink.createModule('Ink.UI.Drawer', '1', ['Ink.UI.Common_1', 'Ink.Dom.Loaded_1', '
          */
         _init: function () {
             // make sure we have the required elements acording to the config options
-
+            // TODO consider this._has{Left,Right} because of extensive checks for this._options.sides
             this._contentDrawers = Ink.ss(this._options.contentDrawer);
 
             this._leftDrawer = Ink.s(this._options.leftDrawer);
@@ -3776,22 +3771,40 @@ Ink.createModule('Ink.UI.Drawer', '1', ['Ink.UI.Common_1', 'Ink.Dom.Loaded_1', '
                 break;
             }
 
+            var atLeastOneSide = false;
+            var errorMsg = null;
+
+            function validateSide(side) {
+                if (side.drawer && side.triggers.length) {
+                    atLeastOneSide = true;
+                } else {
+                    errorMsg = side.drawer ? elNotFound(side.drawerOption) : elNotFound(side.triggerOption);
+                }
+            }
+
             if (this._options.sides === 'left' || this._options.sides === 'both') {
-                if( !this._leftDrawer ){
-                    elNotFound(this._options.leftDrawer);
-                }
+                validateSide({
+                    name: 'left',
+                    drawer: this._leftDrawer,
+                    drawerOption: this._options.leftDrawer,
+                    triggers: this._leftTriggers,
+                    triggerOption: this._options.leftTrigger
+                });
+            } else if (this._options.sides === 'right' || this._options.sides === 'both') {
+                validateSide({
+                    name: 'right',
+                    drawer: this._rightDrawer,
+                    drawerOption: this._options.rightDrawer,
+                    triggers: this._rightTriggers,
+                    triggerOption: this._options.rightTrigger
+                });
+            }
 
-                if(this._leftTriggers.length === 0){
-                    elNotFound(this._options.leftTrigger);
-                }
-            } else {
-                if( !this._rightDrawer ){
-                    elNotFound(this._options.rightDrawer);
-                }
-
-                if( this._rightTriggers.length === 0 ){
-                    elNotFound(this._options.rightTrigger);
-                }
+            // Only if all sides requested are missing, warn.
+            // Setting 'sides' to both and ommitting the left side (or elements for the left side)
+            // shouldn't trigger a warning. So we set the error message above, and here we decide whether to show it or not by counting.
+            if (!atLeastOneSide) {
+                Ink.warn(errorMsg);
             }
 
             this._isOpen = false;
@@ -3801,7 +3814,6 @@ Ink.createModule('Ink.UI.Drawer', '1', ['Ink.UI.Common_1', 'Ink.Dom.Loaded_1', '
                 click:     Ink.bindEvent(this._onClick, this),
                 afterTransition: Ink.bindEvent(this._afterTransition, this)
             };
-            this._delay = 10;
             this._addEvents();
         },
 
@@ -3813,21 +3825,11 @@ Ink.createModule('Ink.UI.Drawer', '1', ['Ink.UI.Common_1', 'Ink.Dom.Loaded_1', '
          * @private
          **/
         _onClick: function(ev){
-            var triggerClicked = Ink.bind(function (side) {
-                // When clicking on the trigger, the corresponding side is toggled.
-                if (this._isOpen) {
-                    this.close();
-                } else {
-                    this.open(side);
-                }
-                ev.preventDefault();
-            }, this);
-
             if(Element.findUpwardsBySelector(ev.currentTarget,this._options.leftTrigger)){
                 // Clicked on the left trigger
-                triggerClicked('left');
+                this._onTriggerClicked(ev, 'left');
             } else if(Element.findUpwardsBySelector(ev.currentTarget,this._options.rightTrigger)){
-                triggerClicked('right');
+                this._onTriggerClicked(ev, 'right');
             } else if(Element.findUpwardsBySelector(ev.currentTarget,this._options.contentDrawer)){
                 // Clicked on the rest of the body
                 if(this._options.closeOnContentClick) {
@@ -3839,13 +3841,19 @@ Ink.createModule('Ink.UI.Drawer', '1', ['Ink.UI.Common_1', 'Ink.Dom.Loaded_1', '
             }
         },
 
+        _onTriggerClicked: function (ev, side) {
+            // When clicking on the trigger, the corresponding side is toggled.
+            if (this._isOpen) {
+                this.close();
+            } else {
+                this.open(side);
+            }
+            ev.preventDefault();
+        },
+
         _afterTransition: function(){
             if(!this._isOpen){
-                if(this._direction === 'left') {
-                    Css.removeClassName(this._leftDrawer, 'show');
-                } else {
-                    Css.removeClassName(this._rightDrawer, 'show');
-                }
+                Css.removeClassName(this._getRecentDrawer(), 'show');
             }
         },
 
@@ -3853,28 +3861,75 @@ Ink.createModule('Ink.UI.Drawer', '1', ['Ink.UI.Common_1', 'Ink.Dom.Loaded_1', '
             Event.on(document.body, 'click', this._triggers + ', a[href*="#"]', this._handlers.click);
         },
 
+        /**
+         * Gets the drawer which was most recently opened.
+         **/
+        _getRecentDrawer: function () {
+            return  this._direction === 'left'  ? this._leftDrawer :
+                    this._direction === 'right' ? this._rightDrawer : null;
+        },
+
         open: function(direction) {
             this._isOpen = true;
             this._direction = direction;
 
-            var open = direction === 'left' ?
-                this._leftDrawer :
-                this._rightDrawer;
+            var drawerEl = this._getRecentDrawer();
 
-            Css.addClassName(open,'show');
+            Css.addClassName(drawerEl ,'show');
+
+            // Add a timeout because a reflow must trigger for the transition to take place.
+            // Setting the transform at the same time as the element has display:block won't do a transition.
+
             setTimeout(Ink.bind(function(){
                 Css.addClassName(document.body, [this._options.mode, direction]);
-            },this), this._delay);
+            },this), 0);
+
+            if (transitionSupport && this._transitionWillOccur(drawerEl)) {
+                // Fix a renderer problem on IE11 and firefox by causing a reflow on the drawer element when our transition is done.
+                // this problem was preventing the drawer from displaying at all when it was open.
+                Event.one(drawerEl,
+                    transitionSupport.eventName,
+                    function () {
+                        Css.removeClassName(drawerEl, 'show');
+
+                        setTimeout(function () {
+                            Css.addClassName(drawerEl, 'show');
+                        });
+                    });
+            }
+        },
+
+        /**
+         * Given an element, return whether it is going to perform a transition.
+         * This is not perfect, but since there is no transitionstart event, it will have to do.
+         */
+        _transitionWillOccur: function (elm) {
+            return !!(transitionSupport && Css.getStyle(elm, transitionSupport.styleProp));
         },
 
         close: function() {
             if (this._isOpen === false) { return; }
-            this._isOpen = false;
-            // TODO detect transitionEnd exists, otherwise don't rely on it
-            Event.one(document.body, 'transitionend oTransitionEnd webkitTransitionEnd', this._handlers.afterTransition);
-            Css.removeClassName(document.body, [this._options.mode, this._direction]);
-        }
+            var drawerEl = this._getRecentDrawer();
 
+            if (!drawerEl) { return; }
+
+            this._isOpen = false;
+
+            // Detect whether there is transition going on
+            var transitioning = null;
+            if (transitionSupport) {
+                transitioning = this._transitionWillOccur(this._getRecentDrawer());
+            }
+
+            Css.removeClassName(document.body, [this._options.mode, this._direction]);
+
+            if (transitioning) {
+                Event.one(document.body, transitionSupport.eventName, this._handlers.afterTransition);
+            } else {
+                // End the transition now.
+                this._handlers.afterTransition();
+            }
+        }
     };
 
     Common.createUIComponent(Drawer);
@@ -5796,42 +5851,55 @@ Ink.createModule('Ink.UI.FormValidator', '2', [ 'Ink.UI.Common_1','Ink.Dom.Eleme
          * @public
          */
         getElements: function(){
-            this._formElements = {};
+            if (!this._formElements) {
+                this._formElements = {};
+            }
             var formElements = Selector.select( this._options.searchFor, this._rootElement );
-            if( formElements.length ){
-                var i, element;
-                for( i=0; i<formElements.length; i+=1 ){
-                    element = formElements[i];
 
-                    var dataAttrs = Element.data( element );
+            for(var i=0; i<formElements.length; i+=1 ){
+                var element = formElements[i];
 
-                    if( !("rules" in dataAttrs) ){
-                        continue;
-                    }
+                var dataAttrs = Element.data( element );
 
-                    var options = {
-                        form: this
-                    };
+                if( !("rules" in dataAttrs) ){
+                    continue;
+                }
 
-                    var key;
-                    if( ("name" in element) && element.name ){
-                        key = element.name;
-                    } else if( ("id" in element) && element.id ){
-                        key = element.id;
-                    } else {
-                        key = 'element_' + Math.floor(Math.random()*100);
-                        element.id = key;
-                    }
+                var options = {
+                    form: this
+                };
 
-                    if( !(key in this._formElements) ){
-                        this._formElements[key] = [];
-                    }
+                var key;
+                if( ("name" in element) && element.name ){
+                    key = element.name;
+                } else if( ("id" in element) && element.id ){
+                    key = element.id;
+                } else {
+                    key = 'element_' + Math.floor(Math.random()*100);
+                    element.id = key;
+                }
 
-                    this._formElements[key].push( new FormElement( element, options ) );
+                if( !(key in this._formElements) ){
+                    this._formElements[key] = [];
+                }
+
+                var formElement = this._getOrCreateFormElementInstance(key, element, options);
+
+                if (formElement) {
+                    this._formElements[key].push(formElement);
                 }
             }
 
             return this._formElements;
+        },
+
+        _getOrCreateFormElementInstance: function (key, element, options) {
+            for (var j = 0; j < this._formElements[key].length; j++) {
+                if (this._formElements[key][j].getElement() === element) {
+                    return null;
+                }
+            }
+            return new FormElement(element, options);
         },
 
         /**
@@ -5846,7 +5914,7 @@ Ink.createModule('Ink.UI.FormValidator', '2', [ 'Ink.UI.Common_1','Ink.Dom.Eleme
          */
         validate: function( event ) {
 
-            if(this._options.neverSubmit+'' === 'true' && event) {
+            if(this._options.neverSubmit && event) {
                 Event.stopDefault(event);
             }
 
@@ -5875,12 +5943,6 @@ Ink.createModule('Ink.UI.FormValidator', '2', [ 'Ink.UI.Common_1','Ink.Dom.Eleme
             if( errorElements.length === 0 ){
                 if( typeof this._options.onSuccess === 'function' ){
                     this._options.onSuccess();
-                }
-
-                // [3.0.0] remove this, it's a little backwards compat quirk
-                if(event && this._options.cancelEventOnSuccess + '' === 'true') {
-                    Event.stopDefault(event);
-                    return false;
                 }
 
                 return true;
@@ -5937,6 +5999,7 @@ Ink.createModule('Ink.UI.FormValidator', '2', [ 'Ink.UI.Common_1','Ink.Dom.Eleme
 
     Common.createUIComponent(FormValidator);
 
+    FormValidator.FormElement = FormElement;  // Export FormElement too, for testing.
     /**
      * Returns the FormValidator's Object
      */
@@ -6193,8 +6256,6 @@ LazyLoad.prototype = {
      * @sample Ink_UI_LazyLoad_1.html
      */
     _init: function() {
-        this._rootElm = this._element;
-
         this._aData = [];
         this._hasEvents = false;
    
@@ -6214,7 +6275,7 @@ LazyLoad.prototype = {
 
     _getData: function()
     {
-        var aElms = Ink.ss(this._options.item);
+        var aElms = Ink.ss(this._options.item, this._element);
         var attr = null;
         for(var i=0, t=aElms.length; i < t; i++) {
             if (this._options.placeholder != null && !InkElement.hasAttribute(aElms[i], this._options.destination)) {
@@ -6483,7 +6544,7 @@ Ink.createModule('Ink.UI.Modal', '1', ['Ink.UI.Common_1','Ink.Dom.Event_1','Ink.
             if( this._options.trigger ) {
                 var triggerElements = Common.elsOrSelector(this._options.trigger, '');
                 Event.observeMulti(triggerElements, this._options.triggerEvent, Ink.bindEvent(this.open, this));
-            } else if ( this._options.autoDisplay.toString() === "true" ) {
+            } else if ( this._options.autoDisplay ) {
                 this.open();
             }
         },
@@ -6592,7 +6653,7 @@ Ink.createModule('Ink.UI.Modal', '1', ['Ink.UI.Common_1','Ink.Dom.Event_1','Ink.
          */
         _onKeyDown: function(ev) {
             if (ev.keyCode !== 27 || this._wasDismissed) { return; }
-            if (this._options.closeOnEscape.toString() === 'true' &&
+            if (this._options.closeOnEscape &&
                     openModals[openModals.length - 1] === this) {
                 this.dismiss();
                 if (this._wasDismissed) {
@@ -6702,7 +6763,7 @@ Ink.createModule('Ink.UI.Modal', '1', ['Ink.UI.Common_1','Ink.Dom.Event_1','Ink.
             /**
              * Let's 'resize' it:
              */
-            if( this._options.responsive.toString() === 'true' ) {
+            if( this._options.responsive ) {
                 this._onResize(true);
                 Event.observe( window,'resize',this._handlers.resize );
             } else {
@@ -6716,7 +6777,7 @@ Ink.createModule('Ink.UI.Modal', '1', ['Ink.UI.Common_1','Ink.Dom.Event_1','Ink.
 
             // subscribe events
             Event.observe(this._shadeElement, 'click', this._handlers.click);
-            if (this._options.closeOnEscape.toString() === 'true') {
+            if (this._options.closeOnEscape ) {
                 Event.observe(document, 'keydown', this._handlers.keyDown);
             }
 
@@ -6724,6 +6785,15 @@ Ink.createModule('Ink.UI.Modal', '1', ['Ink.UI.Common_1','Ink.Dom.Event_1','Ink.
             openModals.push(this);
 
             Css.addClassName(document.documentElement, 'ink-modal-open');
+        },
+
+        /**
+         * Returns whether the modal is currently open
+         * @method isOpen
+         * @public
+         **/
+        isOpen: function () {
+            return !this._wasDismissed;
         },
 
         /**
@@ -6932,7 +7002,7 @@ Ink.createModule('Ink.UI.Pagination', '1',
      * @param {String}              [options.previousPageClass] CSS Class used in the previous page element
      * @param {String}              [options.nextClass]         CSS Class used in the next element
      * @param {String}              [options.nextPageClass]     CSS Class used in the next page element
-     * @param {Function}            [options.numberFormatter]   Number formatter function. Receives a 0-indexed number and returns the text for the numbered page button.
+     * @param {Function}            [options.numberFormatter]   Number formatter function. Receives a 0-indexed page number, and the page count. Returns the text for the numbered page button.
      *
      * @sample Ink_UI_Pagination_1.html
      */
@@ -6969,6 +7039,8 @@ Ink.createModule('Ink.UI.Pagination', '1',
         previousPageClass: ['String', 'previousPage'],
         nextClass:         ['String', 'next'],
         nextPageClass:     ['String', 'nextPage'],
+        firstClass:        ['String', 'first'],
+        lastClass:         ['String', 'last'],
 
         numberFormatter: ['Function', function(i) { return i + 1; }]
     };
@@ -7064,7 +7136,7 @@ Ink.createModule('Ink.UI.Pagination', '1',
                 liEls = [];
                 for (i = 0, f = this._size; i < f; ++i) {
                     liEl = document.createElement(this._options.childTag);
-                    liEl.appendChild( genAEl( this._options.numberFormatter(i), i) );
+                    liEl.appendChild( genAEl( this._options.numberFormatter(i,this._size), i) );
                     // add "active" class if this is the active element.
                     Css.setClassName(liEl, this._options.activeClass, i === this._current);
                     if (this._nextEl) {
@@ -7254,7 +7326,7 @@ Ink.createModule('Ink.UI.Pagination', '1',
         },
 
         /**
-         * Sets the current page.
+         * Sets the current page. First page is 0.
          *
          * @method setCurrent
          * @param {Number} nr           Sets the current page to given number.
@@ -7304,7 +7376,7 @@ Ink.createModule('Ink.UI.Pagination', '1',
         },
 
         /**
-         * Gets the current page index
+         * Gets the current page index. First page is 0.
          *
          * @method getCurrent
          * @return {Number} Current page
@@ -7394,6 +7466,7 @@ Ink.createModule('Ink.UI.Pagination', '1',
     return Pagination;
 
 });
+
 /**
  * Animated progress bars
  * @module Ink.UI.ProgressBar_1
@@ -7555,14 +7628,14 @@ Ink.createModule('Ink.UI.SmoothScroller', '1', ['Ink.UI.Common_1', 'Ink.Dom.Even
          * the end through requestAnimationFrame
          *
          * @method scroll
-         * @param  {Number} d Y coordinate value to stop
+         * @param  {Number} scrollTop Y coordinate value to stop at
          * @private
          * @static
          */
-        scroll: function(d, options) {
+        scroll: function(scrollTop, options) {
             var a = Math.round(InkElement.scrollHeight());
 
-            var endPos = Math.round(d - options.margin);
+            var endPos = Math.round(scrollTop - options.margin);
 
             if (endPos > a) {
                 a += Math.ceil((endPos - a) / options.speed);
@@ -7574,7 +7647,7 @@ Ink.createModule('Ink.UI.SmoothScroller', '1', ['Ink.UI.Common_1', 'Ink.Dom.Even
 
             if (!((a) === endPos || SmoothScroller.offsetTop === a)) {
                 SmoothScroller.interval = requestAnimationFrame(
-                    Ink.bindMethod(SmoothScroller, 'scroll', d, options), document.body);
+                    Ink.bindMethod(SmoothScroller, 'scroll', scrollTop, options), document.body);
             } else {
                 SmoothScroller.onDone(options);
             }
@@ -7717,9 +7790,8 @@ Ink.createModule('Ink.UI.SortableList', '1', ['Ink.UI.Common_1','Ink.Dom.Css_1',
         'placeholderClass': ['String', 'placeholder'],
         'draggedClass': ['String', 'hide-all'],
         'draggingClass': ['String', 'dragging'],
-        'dragSelector': ['String', 'li'],
-        'dragObject': ['String', null], // Deprecated. Use handleSelector instead.
-        'handleSelector': ['String', null],
+        'dragSelector': ['String', '> li'],
+        'handleSelector': ['String', ':not(button, button *, a[href], a[href] *)'],
         'moveSelector': ['String', false],
         'swap': ['Boolean', false],
         'cancelMouseOut': ['Boolean', false],
@@ -7734,14 +7806,6 @@ Ink.createModule('Ink.UI.SortableList', '1', ['Ink.UI.Common_1','Ink.Dom.Css_1',
          * @private
          */
         _init: function() {
-            if (this._options.dragObject != null) {
-                // [3.0.0] Remove this deprecation notice and stop providing backwards compatibility
-                Ink.warn('Ink.UI.SortableList: options.dragObject is now deprecated. ' +
-                        'Please use options.handleSelector instead.');
-                this._options.handleSelector =
-                    this._options.handleSelector || this._options.dragObject;
-            }
-
             this._handlers = {
                 down: Ink.bind(this._onDown, this),
                 move: Ink.bind(this._onMove, this),
@@ -7937,6 +8001,7 @@ Ink.createModule('Ink.UI.SortableList', '1', ['Ink.UI.Common_1','Ink.Dom.Css_1',
 
     return SortableList;
 });
+
 /**
  * Highlight elements as you scroll
  * @module Ink.UI.Spy_1
@@ -8108,7 +8173,7 @@ Stacker._optionDefinition = {
     column: ['String', '.stacker-column'],
     item: ['String', '.stacker-item'],
 
-    // [3.0.0] review this when we have info about our breakpoints from the CSS
+    // [3.2.0] review this when we have info about our breakpoints from the CSS
     customBreakPoints: ['Object', null], // Must be: {xlarge: {max: 9999, min: 1281, cols: 5}, large:{max:1280, min:1001, cols:4} medium:{max:1000, min:801,cols:3}, ...etc..}
     largeMax: ['Number', Number.MAX_VALUE],
     largeMin: ['Number', 961],
@@ -8367,7 +8432,7 @@ Ink.createModule('Ink.UI.Sticky', '1', ['Ink.UI.Common_1','Ink.Dom.Event_1','Ink
      * @param {String}              [options.stickyClass]       CSS class to stick the element to the screen. Defaults to 'ink-sticky-stuck'.
      * @param {String}              [options.topElement]        CSS Selector that specifies a top element with which the component could collide.
      * @param {String}              [options.bottomElement]     CSS Selector that specifies a bottom element with which the component could collide.
-     * @param {Array|String}        [options.activateInLayouts] Layouts in which the sticky behaviour is present. Pass an array or comma-separated string. Defaults to 'tiny,small,medium,large,xlarge'.
+     * @param {Array|String}        [options.activateInLayouts] Layouts in which the sticky behaviour is present. Pass an array or comma-separated string. Defaults to null, meaning it's enabled in every layout.
      *
      * @sample Ink_UI_Sticky_1.html
      */
@@ -8386,7 +8451,7 @@ Ink.createModule('Ink.UI.Sticky', '1', ['Ink.UI.Common_1','Ink.Dom.Event_1','Ink
         inlineDimensions: ['Boolean', true],
         inlinePosition: ['Boolean', true],
         bottomElement: ['Element', null],
-        activateInLayouts: ['String', 'tiny,small,medium,large,xlarge']
+        activateInLayouts: ['String', null]
     };
 
     Sticky.prototype = {
@@ -8399,7 +8464,9 @@ Ink.createModule('Ink.UI.Sticky', '1', ['Ink.UI.Common_1','Ink.Dom.Event_1','Ink
          */
         _init: function() {
             // Because String#indexOf is compatible with lt IE8 but not Array#indexOf
-            this._options.activateInLayouts = this._options.activateInLayouts.toString();
+            if (this._options.activateInLayouts) {
+                this._options.activateInLayouts = this._options.activateInLayouts.toString();
+            }
 
             this._dims = null;  // force a recalculation of the dimensions later
 
@@ -8430,6 +8497,9 @@ Ink.createModule('Ink.UI.Sticky', '1', ['Ink.UI.Common_1','Ink.Dom.Event_1','Ink
          * @private
          */
         _isDisabledInLayout: function () {
+            if (!this._options.activateInLayouts) {
+                return false;
+            }
             var currentLayout = Common.currentLayout();
             if (!currentLayout) { return false; }
             return this._options.activateInLayouts.indexOf(currentLayout) === -1;
@@ -8856,6 +8926,16 @@ Ink.createModule('Ink.UI.Table', '1', ['Ink.Util.Url_1','Ink.UI.Pagination_1','I
     function numberishEnabledCmp (a, b) {
         var aValue = maybeTurnIntoNumber(Element.textContent(a));
         var bValue = maybeTurnIntoNumber(Element.textContent(b));
+
+        if (typeof aValue === typeof bValue) {
+            return cmp(aValue, bValue);
+        } else {
+            if (typeof aValue === 'number') {  // Numbers always go first, then letters.
+                return 1;
+            } else {
+                return -1;
+            }
+        }
 
         return cmp(aValue, bValue);
     }
@@ -9897,25 +9977,6 @@ Ink.createModule('Ink.UI.Tabs', '1', ['Ink.UI.Common_1','Ink.Dom.Event_1','Ink.D
         },
 
         /**
-         *
-         * Returns the parent of the currently active menu link.
-         *
-         * This is useful if you want to have `li` elements wrapping your links
-         * and want to access the currently visible one.
-         *
-         * (This method is deprecated)
-         * @method activeMenuTab
-         * @deprecated
-         * @return {DOMElement|null} Active menu LI, or `null` if there is none.
-         * @public
-         */
-        activeMenuTab: function(){
-            // [3.1.0] remove this
-            Ink.warn('Ink.UI.Tabs.activeMenuTab() is deprecated');
-            return this._activeMenuTab;
-        },
-
-        /**
          * Gets the currently active Menu link (the links which the user clicks on to change tabs)
          * 
          * @method activeMenuLink
@@ -9937,12 +9998,6 @@ Ink.createModule('Ink.UI.Tabs', '1', ['Ink.UI.Common_1','Ink.Dom.Event_1','Ink.D
          */
         activeSection: function(){
             return this._activeSection;
-        },
-
-        activeContentTab: function () {
-            // [3.1.0] remove this
-            Ink.warn('Ink.UI.Tabs.activeContentTab() is deprecated. Use activeSection instead.');
-            return this._activeSection();
         },
 
         /**
@@ -10266,6 +10321,7 @@ Ink.createModule("Ink.UI.TagField","1",["Ink.Dom.Element_1", "Ink.Dom.Event_1", 
      * @param {String}              [options.classNameOff]          CSS class to toggle when off. Defaults to 'hide-all'.
      * @param {String}              [options.triggerEvent]          Event that will trigger the toggling. Defaults to 'click'.
      * @param {Boolean}             [options.closeOnClick]          Flag to toggle the targe off when clicking outside the toggled content. Defaults to true.
+     * @param {Boolean}             [options.canToggleAnAncestor]   Set to true if you want the toggle to target ancestors of itself. Defaults to false.
      * @param {String}              [options.closeOnInsideClick]    Toggle off when a child element matching this selector is clicked. Set to null to deactivate the check. Defaults to 'a[href]'.
      * @param {Boolean}             [options.initialState]          Flag to define initial state. false: off, true: on, null: markup. Defaults to null.
      * @param {Function}            [options.onChangeState]         Callback when the toggle state changes. Return `false` to cancel the event.
@@ -10282,6 +10338,7 @@ Ink.createModule("Ink.UI.TagField","1",["Ink.Dom.Element_1", "Ink.Dom.Event_1", 
         target:         ['Elements'],
         triggerEvent:   ['String', 'click'],
         closeOnClick:   ['Boolean', true],
+        canToggleAnAncestor: ['Boolean', false],
         isAccordion:    ['Boolean', false],
         initialState:   ['Boolean', null],  // May be true, false, or null to be what it is right now
         classNameOn:    ['String', 'show-all'],
@@ -10304,11 +10361,9 @@ Ink.createModule("Ink.UI.TagField","1",["Ink.Dom.Element_1", "Ink.Dom.Event_1", 
             this._targets = Common.elsOrSelector(this._options.target);
 
             // Boolean option handling
-            this._options.closeOnClick = this._options.closeOnClick.toString() === 'true';
+            this._options.closeOnClick = this._options.closeOnClick;
             // Actually a throolean
-            if (this._options.initialState !== null){
-                this._options.initialState = this._options.initialState.toString() === 'true';
-            } else {
+            if (this._options.initialState === null){
                 this._options.initialState = Css.getStyle(this._targets[0], 'display') !== 'none';
             }
 
@@ -10356,7 +10411,7 @@ Ink.createModule("Ink.UI.TagField","1",["Ink.Dom.Element_1", "Ink.Dom.Event_1", 
             if( this._options.closeOnClick ){
                 InkEvent.observe( document, 'click', Ink.bind(this._onOutsideClick, this));
             }
-            if( this._options.closeOnInsideClick && this._options.closeOnInsideClick !== 'false') {
+            if( this._options.closeOnInsideClick ) {
                 var sel = this._options.closeOnInsideClick;
                 if (sel.toString() === 'true') {
                     sel = '*';
@@ -10386,7 +10441,7 @@ Ink.createModule("Ink.UI.TagField","1",["Ink.Dom.Element_1", "Ink.Dom.Event_1", 
                 return thisOne === target || InkElement.isAncestorOf(thisOne, target);
             });
 
-            if (isAncestorOfClickedElement) {
+            if (!this._options.canToggleAnAncestor && isAncestorOfClickedElement) {
                 return;
             }
 
@@ -11017,8 +11072,6 @@ Ink.createModule('Ink.UI.TreeView', '1', ['Ink.UI.Common_1','Ink.Dom.Event_1','I
 
     TreeView._optionDefinition = {
         'node':   ['String', 'li'],
-        // [3.0.1] Deprecate this terrible, terrible name
-        'child':  ['String',null],
         'children':  ['String','ul'],
         'parentClass': ['String','parent'],
         'openNodeClass': ['String', 'open'],
@@ -11037,11 +11090,6 @@ Ink.createModule('Ink.UI.TreeView', '1', ['Ink.UI.Common_1','Ink.Dom.Event_1','I
          * @private
          */
         _init: function(){
-            if (this._options.child) {
-                Ink.warn('Ink.UI.TreeView: options.child is being renamed to options.children.');
-                this._options.children = this._options.child;
-            }
-
             this._handlers = {
                 click: Ink.bindEvent(this._onClick,this)
             };

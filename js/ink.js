@@ -44,9 +44,10 @@
      */
 
     window.Ink = {
-        VERSION: '3.0.5',
+        VERSION: '3.1.1',
         _checkPendingRequireModules: function() {
             var I, F, o, dep, mod, cb, pRMs = [];
+            var toApply = [];
             for (I = 0, F = pendingRMs.length; I < F; ++I) {
                 o = pendingRMs[I];
 
@@ -65,16 +66,19 @@
 
                 if (o.remaining > 0) {
                     pRMs.push(o);
-                }
-                else {
+                } else {
                     cb = o.cb;
                     if (!cb) { continue; }
                     delete o.cb; // to make sure I won't call this more than once!
-                    cb.apply(false, o.args);
+                    toApply.push([cb, o.args]);
                 }
             }
 
             pendingRMs = pRMs;
+
+            for (var i = 0; i < toApply.length; i++) {
+                toApply[i][0].apply(false, toApply[i][1]);
+            }
 
             if (pendingRMs.length > 0) {
                 setTimeout( function() { Ink._checkPendingRequireModules(); }, 0 );
@@ -125,12 +129,12 @@
             }
             return path;
         },
-        
+
         /**
          * Sets the URL path for a namespace.
          * Use this to customize where requireModules and createModule will load dependencies from.
          * This can be useful to set your own CDN for dynamic module loading or simply to change your module folder structure
-         * 
+         *
          * @method setPath
          *
          * @param {String} key       Module or namespace
@@ -256,7 +260,7 @@
         },
 
         /**
-         * Creates a new module. 
+         * Creates a new module.
          * Use this to wrap your code and benefit from the module loading used throughout the Ink library
          *
          * @method createModule
@@ -264,7 +268,7 @@
          * @param  {Number}    version  Version number
          * @param  {Array}     deps     Array of module names which are dependencies of the module being created. The order in which they are passed here will define the order they will be passed to the callback function.
          * @param  {Function}  modFn    The callback function to be executed when all the dependencies are resolved. The dependencies are passed as arguments, in the same order they were declared. The function itself should return the module.
-         * @sample Ink_1_createModule.html 
+         * @sample Ink_1_createModule.html
          *
          */
         createModule: function(mod, ver, deps, modFn) { // define
@@ -352,13 +356,13 @@
         },
 
         /**
-         * Requires modules asynchronously 
+         * Requires modules asynchronously
          * Use this to get modules, even if they're not loaded yet
          *
          * @method requireModules
-         * @param  {Array}     deps  Array of module names. The order in which they are passed here will define the order they will be passed to the callback function. 
+         * @param  {Array}     deps  Array of module names. The order in which they are passed here will define the order they will be passed to the callback function.
          * @param  {Function}  cbFn  The callback function to be executed when all the dependencies are resolved. The dependencies are passed as arguments, in the same order they were declared.
-         * @sample Ink_1_requireModules.html 
+         * @sample Ink_1_requireModules.html
          */
         requireModules: function(deps, cbFn) { // require
             //console.log(['requireModules([', deps.join(', '), '], ', !!cbFn, ')'].join(''));
@@ -430,7 +434,7 @@
         /**
          * Builds the markup needed to load the modules.
          * This method builds the script tags needed to load the currently used modules
-         * 
+         *
          * @method getModuleScripts
          * @uses getModulesLoadOrder
          * @return {String} The script markup
@@ -444,7 +448,7 @@
 
             return mlo.join('\n');
         },
-        
+
         /**
          * Creates an Ink.Ext module
          *
@@ -456,7 +460,7 @@
          * @param {String} version  Extension version
          * @param {Array}  dependencies Extension dependencies
          * @param {Function} modFn  Function returning the extension
-         * @sample Ink_1_createExt.html 
+         * @sample Ink_1_createExt.html
          */
         createExt: function (moduleName, version, dependencies, modFn) {
             return Ink.createModule('Ink.Ext.' + moduleName, version, dependencies, modFn);
@@ -467,11 +471,11 @@
          * Creates a new function that, when called, has its this keyword set to the provided value, with a given sequence of arguments preceding any provided when the new function is called.
          *
          * @method bind
-         * @param {Function}  fn        The function 
+         * @param {Function}  fn        The function
          * @param {Object}    context   The value to be passed as the this parameter to the target function when the bound function is called. If used as false, it preserves the original context and just binds the arguments.
          * @param {Any}   [args*]     Additional arguments will be sent to the original function as prefix arguments.
          * @return {Function}
-         * @sample Ink_1_bind.html 
+         * @sample Ink_1_bind.html
          */
         bind: function(fn, context) {
             var args = Array.prototype.slice.call(arguments, 2);
@@ -491,7 +495,7 @@
          * @param {String}  methodName  The name of the method that will be bound
          * @param {Any}   [args*]     Additional arguments will be sent to the new method as prefix arguments.
          * @return {Function}
-         * @sample Ink_1_bindMethod.html 
+         * @sample Ink_1_bindMethod.html
          */
         bindMethod: function (object, methodName) {
             return Ink.bind.apply(Ink,
@@ -504,11 +508,11 @@
          * Set "context" to `false` to preserve the original context of the function and just bind the arguments.
          *
          * @method bindEvent
-         * @param {Function}  fn        The function 
-         * @param {Object}    context   The value to be passed as the this parameter to the target 
+         * @param {Function}  fn        The function
+         * @param {Object}    context   The value to be passed as the this parameter to the target
          * @param {Any}     [args*]   Additional arguments will be sent to the original function as prefix arguments
          * @return {Function}
-         * @sample Ink_1_bindEvent.html 
+         * @sample Ink_1_bindEvent.html
          */
         bindEvent: function(fn, context) {
             var args = Array.prototype.slice.call(arguments, 2);
@@ -525,7 +529,7 @@
          * @method i
          * @param {String} id Element ID
          * @return {DOMElement}
-         * @sample Ink_1_i.html 
+         * @sample Ink_1_i.html
          */
         i: function(id) {
             if(!id) {
@@ -545,7 +549,7 @@
          * @param {String}     rule
          * @param {DOMElement} [from]
          * @return {Array} array of DOMElements
-         * @sample Ink_1_ss.html 
+         * @sample Ink_1_ss.html
          */
         ss: function(rule, from)
         {
@@ -563,7 +567,7 @@
          * @param {String}     rule     Selector string
          * @param {DOMElement} [from]   Context element. If set to a DOM element, the rule will only look for descendants of this DOM Element.
          * @return {DOMElement}
-         * @sample Ink_1_s.html 
+         * @sample Ink_1_s.html
          */
         s: function(rule, from)
         {
@@ -582,7 +586,7 @@
          * @param {Object} source       The object whose properties will be copied over to the destination object
          * @param {Object} [args*]      Additional source objects. The last source will override properties of the same name in the previous defined sources
          * @return destination object, enriched with defaults from the sources
-         * @sample Ink_1_extendObj.html 
+         * @sample Ink_1_extendObj.html
          */
         extendObj: function(destination/*, source... */) {
             var sources = [].slice.call(arguments, 1);
@@ -604,7 +608,7 @@
          *
          * @method log
          * @param {Any} [args*] Arguments to be evaluated
-         * @sample Ink_1_log.html 
+         * @sample Ink_1_log.html
          **/
         log: function () {
             // IE does not have console.log.apply in IE10 emulated mode
@@ -619,7 +623,7 @@
          *
          * @method warn
          * @param {Any} [args*] Arguments to be evaluated
-         * @sample Ink_1_warn.html 
+         * @sample Ink_1_warn.html
          **/
         warn: function () {
             // IE does not have console.log.apply in IE10 emulated mode
@@ -634,7 +638,7 @@
          *
          * @method error
          * @param {Any} [args*] Arguments to be evaluated
-         * @sample Ink_1_error.html 
+         * @sample Ink_1_error.html
          **/
         error: function () {
             // IE does not have console.log.apply in IE10 emulated mode
@@ -1153,7 +1157,7 @@ Ink.createModule('Ink.Net.Ajax', '1', [], function() {
                     response.responseXML  = xmlDoc;
                 }
 
-                if (this.transport.responseXML !== null && response.responseJSON === null && this.transport.responseXML.xml !== ""){
+                if (this.transport.responseXML != null && response.responseJSON == null && this.transport.responseXML.xml !== ""){
                     responseContent = this.transport.responseXML;
                 }
 
@@ -2066,22 +2070,14 @@ Ink.createModule( 'Ink.Dom.Css', 1, [], function() {
          * @sample Ink_Dom_Css_toggleClassName.html 
          */
         toggleClassName: function(elm, className, forceAdd) {
-            if (elm && className){
-                if (typeof elm.classList !== "undefined" && !/[, ]/.test(className)){
-                    elm = Ink.i(elm);
-                    if (elm !== null){
-                        elm.classList.toggle(className);
-                    }
-                    return true;
-                }
-            }
+            if (!elm || !className) { return false; }
 
             if (typeof forceAdd !== 'undefined') {
-                if (forceAdd === true) {
-                    Css.addClassName(elm, className);
-                }
-                else if (forceAdd === false) {
-                    Css.removeClassName(elm, className);
+                return Css.addRemoveClassName(elm, className, forceAdd);
+            } else if (typeof elm.classList !== "undefined" && !/[, ]/.test(className)) {
+                elm = Ink.i(elm);
+                if (elm !== null){
+                    elm.classList.toggle(className);
                 }
             } else {
                 if (Css.hasClassName(elm, className)) {
@@ -4983,9 +4979,11 @@ Ink.createModule('Ink.Dom.Event', 1, [], function() {
             }
             // check each type/element for removed listeners and remove the rootListener where it's no longer needed
             for (i in removed) {
-              if (!registry.has(element, removed[i].t, null, false)) {
-                // last listener of this type, remove the rootListener
-                listener(element, removed[i].t, false, removed[i].c)
+              if (removed.hasOwnProperty(i)) {
+                if (!registry.has(element, removed[i].t, null, false)) {
+                  // last listener of this type, remove the rootListener
+                  listener(element, removed[i].t, false, removed[i].c)
+                }
               }
             }
           }
@@ -5275,12 +5273,15 @@ Ink.createModule('Ink.Dom.Event', 1, [], function() {
             } else {
                 var that = this;
                 var args = [].slice.call(arguments);
-                if (!timeout) {
-                    timeout = setTimeout(function () {
-                        timeout = null;
-                        return throttled.apply(that, args);
-                    }, wait - timeDiff);
+
+                if (timeout) {
+                    clearTimeout(timeout);
                 }
+
+                timeout = setTimeout(function () {
+                    timeout = null;
+                    return throttled.apply(that, args);
+                }, wait - timeDiff);
             }
         };
         return throttled;
@@ -6076,7 +6077,7 @@ Ink.createModule('Ink.Dom.Loaded', 1, [], function() {
 
             var csf = context.handlers.checkState;
             var alreadyLoaded = (
-                /complete|interactive|loaded/.test(context.doc.readyState) &&
+                /complete|loaded/.test(context.doc.readyState) &&
                 context.win.location.toString() !== 'about:blank');  // https://code.google.com/p/chromium/issues/detail?id=32357
 
             if (alreadyLoaded){
@@ -6112,7 +6113,7 @@ Ink.createModule('Ink.Dom.Loaded', 1, [], function() {
          * @private
          */
         _checkState: function(event, context) {
-            if ( !event || (event.type === 'readystatechange' && context.doc.readyState !== 'complete')) {
+            if ( !event || (event.type === 'readystatechange' && !/complete|loaded/.test(context.doc.readyState))) {
                 return;
             }
             var where = (event.type === 'load') ? context.win : context.doc;
@@ -6128,8 +6129,10 @@ Ink.createModule('Ink.Dom.Loaded', 1, [], function() {
          */
 
         /**
+         * (old IE only) wait until a doScroll() call does not throw an error
          *
-         * function _poll
+         * @method _poll
+         * @private
          */
         _poll: function(context) {
             try {
@@ -8908,7 +8911,6 @@ Ink.createModule('Ink.Util.BinPack', '1', [], function() {
  */
 
 Ink.createModule('Ink.Util.Cookie', '1', [], function() {
-
     'use strict';
 
     /**
@@ -8917,10 +8919,10 @@ Ink.createModule('Ink.Util.Cookie', '1', [], function() {
     var Cookie = {
 
         /**
-         * Gets an object with the current page cookies.
+         * Gets an object with the current page cookies, or a specific cookie if you specify the `name`.
          *
          * @method get
-         * @param   {String}          name      The cookie name.
+         * @param   {String}          [name]    The cookie name.
          * @return  {String|Object}             If the name is specified, it returns the value of that key. Otherwise it returns the full cookie object
          * @public
          * @static
@@ -8931,8 +8933,10 @@ Ink.createModule('Ink.Util.Cookie', '1', [], function() {
             var cookie = document.cookie || false;
 
             var _Cookie = {};
+
             if(cookie) {
                 cookie = cookie.replace(new RegExp("; ", "g"), ';');
+
                 var aCookie = cookie.split(';');
                 var aItem = [];
                 if(aCookie.length > 0) {
@@ -8941,15 +8945,14 @@ Ink.createModule('Ink.Util.Cookie', '1', [], function() {
                         if(aItem.length === 2) {
                             _Cookie[aItem[0]] = decodeURIComponent(aItem[1]);
                         }
-                        aItem = [];
                     }
                 }
-            }
-            if(name) {
-                if(typeof(_Cookie[name]) !== 'undefined') {
-                    return _Cookie[name];
-                } else {
-                    return null;
+                if(name) {
+                    if(typeof(_Cookie[name]) !== 'undefined') {
+                        return _Cookie[name];
+                    } else {
+                        return null;
+                    }
                 }
             }
             return _Cookie;
@@ -9007,12 +9010,13 @@ Ink.createModule('Ink.Util.Cookie', '1', [], function() {
                 sPath = 'path=/';
             }
 
-            if(domain && typeof(domain) !== 'undefined') {
+            if(domain) {
                 sDomain = 'domain='+domain;
-            } else {
-                var portClean = new RegExp(":(.*)");
-                sDomain = 'domain='+window.location.host;
-                sDomain = sDomain.replace(portClean,"");
+            } else if (/\./.test(window.location.hostname)) {
+                // When trying to set domain=localhost or any other domain
+                // without dots, setting the cookie fails.
+                // Anyways, the cookies are bound to the current domain by default so let it be.
+                sDomain = 'domain='+window.location.hostname;
             }
 
             if(secure && typeof(secure) !== 'undefined') {
@@ -9021,7 +9025,11 @@ Ink.createModule('Ink.Util.Cookie', '1', [], function() {
                 sSecure = false;
             }
 
-            document.cookie = sName+'; '+sExpires+'; '+sPath+'; '+sDomain+'; '+sSecure;
+            document.cookie = sName +
+                '; ' + sExpires +
+                '; ' + sPath +
+                (sDomain ? '; ' + sDomain : '') +
+                '; ' + sSecure;
         },
 
         /**
@@ -9035,26 +9043,10 @@ Ink.createModule('Ink.Util.Cookie', '1', [], function() {
          * @static
          * @sample Ink_Util_Cookie_remove.html
          */
-        remove: function(cookieName, path, domain)
-        {
-            //var expiresDate = 'Thu, 01-Jan-1970 00:00:01 GMT';
-            var sPath = false;
-            var sDomain = false;
-            var expiresDate = -999999999;
+        remove: function(cookieName, path, domain) {
+            var expiresDate = -1;
 
-            if(path && typeof(path) !== 'undefined') {
-                sPath = path;
-            } else {
-                sPath = '/';
-            }
-
-            if(domain && typeof(domain) !== 'undefined') {
-                sDomain = domain;
-            } else {
-                sDomain = window.location.host;
-            }
-
-            this.set(cookieName, 'deleted', expiresDate, sPath, sDomain);
+            this.set(cookieName, 'deleted', expiresDate, path, domain);
         }
     };
 
@@ -10367,12 +10359,6 @@ Ink.createModule('Ink.Util.I18n', '1', [], function () {
         Ink.extendObj( I18n.prototype._gDict , dict[ I18n.prototype._gLang ] );
     };
 
-    I18n.append = function () {
-        // [3.1.0] remove this alias
-        Ink.warn('Ink.Util.I18n.append() was renamed to appendGlobal().');
-        return I18n.appendGlobal.apply(I18n, [].slice.call(arguments));
-    };
-
     /**
      * Gets or sets the current default language of I18n instances.
      *
@@ -10397,12 +10383,6 @@ Ink.createModule('Ink.Util.I18n', '1', [], function () {
         }
     };
 
-    I18n.lang = function () {
-        // [3.1.0] remove this alias
-        Ink.warn('Ink.Util.I18n.lang() was renamed to langGlobal().');
-        return I18n.langGlobal.apply(I18n, [].slice.call(arguments));
-    };
-    
     return I18n;
 });
 /**
