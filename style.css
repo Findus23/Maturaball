@@ -83,3 +83,9 @@ p,small,ul,.clear {
 		display: none;
 	}
 }
+#wetterwarnung button {
+	color: black;
+}
+#wetterwarnung {
+	background-color: #efd767;
+}
